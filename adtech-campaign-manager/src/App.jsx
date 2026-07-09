@@ -1,12 +1,14 @@
+import AppRoutes from "./routing/routes";
+
 function App() {
-  return (
-    <div>
-      <h1>AdTech Campaign Manager</h1>
-     </div>
-  );
+  return <AppRoutes />;
 }
 
 export default App;
+
+
+
+
 
 
 
