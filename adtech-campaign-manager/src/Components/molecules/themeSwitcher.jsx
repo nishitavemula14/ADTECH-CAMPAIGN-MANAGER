@@ -14,7 +14,7 @@ export default function ThemeSwitcher() {
   }, [theme]);
 
   return (
-    <div className="flex items-center gap-2 rounded-lg border p-1 bg-white shadow">
+    <div className="flex items-center inline-flex gap-2 rounded-lg border p-1 bg-white shadow">
       <button
         onClick={() => setTheme("light")}
         className={`p-2 rounded-md ${

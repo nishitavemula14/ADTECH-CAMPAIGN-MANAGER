@@ -92,7 +92,7 @@ export default function CreateCampaign() {
             <option>Google Ads</option>
             <option>Facebook</option>
             <option>Instagram</option>
-            <option>LinkedIn</option>
+            <option>All</option>
           </select>
         </div>
 
@@ -122,9 +122,13 @@ export default function CreateCampaign() {
           </label>
 
           <input
-            type="number"
+            type="text"
+            inputMode="numeric"
+            pattern="[0-9]*"
             value={budget}
-            onChange={(e) => setBudget(e.target.value)}
+            onChange={(e) =>
+              setBudget(e.target.value.replace(/\D/g, ""))
+            }
             placeholder="Enter budget"
             className="w-full border rounded-md p-3"
           />

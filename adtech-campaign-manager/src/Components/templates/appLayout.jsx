@@ -1,67 +1,98 @@
-import {NavLink, Outlet, useLocation } from "react-router-dom";
-import {BarChart3, ListChecks, PlusCircle } from "lucide-react";
+import { NavLink, Outlet } from "react-router-dom";
+import {
+  BarChart3,
+  ListChecks,
+  PlusCircle,
+} from "lucide-react";
+
 import ThemeSwitcher from "../molecules/themeSwitcher.jsx";
 
-const navItems =[
-    {to: "/", label: "Dashboard", icon: BarChart3, isActive: (pathname) => pathname === "/"},
-    {
-        to:"/campaigns",
-        label:"Campaigns",
-        icon: ListChecks,
-        isActive: (pathname) => pathname === "/campaigns" || pathname.startsWith("/campaigns")
-    },
-    { to: "/campaigns/new", label: "Create Campaign", icon: PlusCircle, isActive: (pathname) => pathname === "/campaigns/new" },
-];
-
 export default function AppLayout() {
-    const { pathname} = useLocation();
+  return (
+    <div className="flex h-screen overflow-hidden bg-gray-100">
 
-    return (
-        <div className="grid min-h-screen grid-cols-[250px_minmax(0,1fr)] overflow-x-hidden bg-background text-foreground max-[840px]:grid-cols-1">
-            <aside className="flex flex-col gap-7 border-r border-border bg-card px-[18px] py-6 max-[840px]:sticky max-[840px]:top=- max-[840px]:top-0 max-[840px]:z-[2] max-[840px]:grid max-[840px]:grid-cols-[minmax(0,1fr)_auto] max-[840px]:gap-4 max-[840px]:border-r-0 max-[840px]:border-b max-[840px]:p-3.5">
-                <div className="flex min-w-0 items-center gap-3 max-[520px]:items-start">
-                    <span className="grid h-[46px] w-[46px] flex-[0_0_46px] place-items-center rounded-md bg-primary text-[0.76rem] font-black leading-none text-primary-foreground shadow-sm max-[520px]:h-[42px] max-[520px]:w-[42px] max-[520px]:basis-[42px]"
-                    aria-hidden="true"
-                 >
-                    ACM
-                 </span>
-                 <div>
-                    <strong className="block">AdTech</strong>
-                    <span className="block text-[0.88rem] text-[var(--text-muted)]">Campaign Manager</span>
-                </div>
-                </div>
-                <nav className="grid gap-1.5 max-[840px]:col-span-full max-[840px]:grid-cols-3" aria-label="Main navigation">
-                        {navItems.map(({to, label, icon: Icon, isActive}) => (
-                            <NavLink
-                               key={to}
-                               to={to}
-                               className={[
-                                  "flex min-h-[42px] items-center gap-2.5 rounded-md px-3 text-sm font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground max-[840px]:justify-center max-[520px]:px-2", 
-                                  isActive(pathname) ? "bg-accent text-accent-foreground" : "",
-                               ]
-                                 .filter(Boolean)
-                                 .join(" ")}
-                            >
-                                <Icon size={18} aria-hidden="true" />
-                                <span className="max-[520px]:hidden">{label}</span>  
-                            </NavLink>     
-                        ))}
-                        </nav>
+      {/* Sidebar */}
+      <aside className="flex h-screen w-64 shrink-0 flex-col border-r bg-white p-5 shadow-sm">
 
-                        <div className="mt-auto flex justify-start max-[840px]:col-start-2 max-[840px]:row-start-1 max-[840px]:mt-0 max-[840px]:items-center max-[840px]:justify-end">
-                            <ThemeSwitcher/>
-                        </div>
-            </aside>
+        {/* Logo */}
+        <div className="flex items-center gap-3 mb-8">
 
-            <main className="min-w-0 overflow-x-hidden p-[34px] max-[840px]:px-3.5 max-[840px]:py-[22px] [&:has(.dashboard-page)]:py-6">
-                <Outlet />
-            </main>
+          <div className="w-12 h-12 bg-blue-600 text-white rounded-lg flex items-center justify-center font-bold">
+            ACM
+          </div>
+
+          <div>
+            <h2 className="font-bold text-lg">
+              AdTech
+            </h2>
+
+            <p className="text-gray-500 text-sm">
+              Campaign Manager
+            </p>
+          </div>
+
         </div>
-    );
+
+        {/* Navigation */}
+
+        <nav className="flex flex-col gap-2">
+
+          <NavLink
+            to="/"
+            className={({ isActive }) =>
+              `flex items-center gap-3 px-3 py-2 rounded-lg ${
+                isActive
+                  ? "bg-blue-600 text-white"
+                  : "hover:bg-gray-100"
+              }`
+            }
+          >
+            <BarChart3 size={18} />
+            Dashboard
+          </NavLink>
+
+          <NavLink
+            to="/campaigns"
+            className={({ isActive }) =>
+              `flex items-center gap-3 px-3 py-2 rounded-lg ${
+                isActive
+                  ? "bg-blue-600 text-white"
+                  : "hover:bg-gray-100"
+              }`
+            }
+          >
+            <ListChecks size={18} />
+            Campaigns
+          </NavLink>
+
+          <NavLink
+            to="/campaigns/new"
+            className={({ isActive }) =>
+              `flex items-center gap-3 px-3 py-2 rounded-lg ${
+                isActive
+                  ? "bg-blue-600 text-white"
+                  : "hover:bg-gray-100"
+              }`
+            }
+          >
+            <PlusCircle size={18} />
+            Create Campaign
+          </NavLink>
+
+        </nav>
+
+    
+
+        <div className="mt-auto">
+          <ThemeSwitcher />
+        </div>
+
+      </aside>
+
+      <main className="h-screen flex-1 overflow-y-auto overflow-x-hidden p-6">
+        <Outlet />
+      </main>
+
+    </div>
+  );
 }
-
-
-        
-
-
-

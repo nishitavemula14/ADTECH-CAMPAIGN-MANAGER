@@ -1,121 +1,121 @@
-import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
-import { ArrowLeft } from "lucide-react";
+import { Link, useParams } from "react-router-dom";
+import { ArrowLeft, Edit } from "lucide-react";
+import { useCampaigns } from "../hooks/useCampaigns.js";
 
-export default function CreateCampaign() {
-  const navigate = useNavigate();
+const STATUS_STYLES = {
+  active: "bg-green-100 text-green-700",
+  paused: "bg-yellow-100 text-yellow-700",
+  completed: "bg-blue-100 text-blue-700",
+};
 
-  const [campaignName, setCampaignName] = useState("");
-  const [platform, setPlatform] = useState("");
-  const [budget, setBudget] = useState("");
+function formatCurrency(value) {
+  return `\u20B9${Number(value).toLocaleString()}`;
+}
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
+function formatStatus(status) {
+  const normalizedStatus = String(status).toLowerCase();
+  return normalizedStatus.charAt(0).toUpperCase() + normalizedStatus.slice(1);
+}
 
-    if (!campaignName || !platform || !budget) {
-      alert("Please fill all the fields");
-      return;
-    }
+export default function CampaignDetail() {
+  const { campaignId } = useParams();
+  const { getCampaign } = useCampaigns();
+  const campaign = getCampaign(campaignId);
 
-   
-    console.log({
-      campaignName,
-      platform,
-      budget,
-    });
-
-    alert("Campaign Created Successfully!");
-
-    navigate("/campaigns");
-  };
-
-  return (
-    <div className="max-w-3xl mx-auto p-6">
-
-    
-      <div className="flex items-center justify-between mb-8">
-
-        <div>
-          <h3 className="text-gray-500 text-sm">
-            Audience & Budget
-          </h3>
-
-          <h1 className="text-3xl font-bold">
-            Create Campaign
-          </h1>
-        </div>
-
+  if (!campaign) {
+    return (
+      <div className="p-6 text-center">
+        <h1 className="text-2xl font-bold">Campaign Not Found</h1>
         <Link
           to="/campaigns"
-          className="flex items-center gap-2 border px-4 py-2 rounded-lg hover:bg-gray-100"
+          className="mt-4 inline-block text-blue-600 underline"
         >
-          <ArrowLeft size={18} />
-          Back
+          Back to Campaigns
         </Link>
+      </div>
+    );
+  }
 
+  const status = String(campaign.status).toLowerCase();
+
+  return (
+    <div className="mx-auto max-w-4xl p-6">
+      <div className="mb-8 flex items-center justify-between">
+        <div>
+          <p className="text-sm text-gray-500">Campaign Details</p>
+          <h1 className="text-3xl font-bold">{campaign.name}</h1>
+        </div>
+
+        <div className="flex gap-3">
+          <Link
+            to="/campaigns"
+            className="flex items-center gap-2 rounded-lg border px-4 py-2 transition hover:bg-gray-100"
+          >
+            <ArrowLeft size={18} />
+            Back
+          </Link>
+
+          <Link
+            to={`/campaigns/${campaign.id}/edit`}
+            className="flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-white transition hover:bg-blue-700"
+          >
+            <Edit size={18} />
+            Edit
+          </Link>
+        </div>
       </div>
 
+      <div className="rounded-xl bg-white p-6 shadow">
+        <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
+          <div>
+            <p className="text-sm font-semibold text-gray-500">Campaign ID</p>
+            <p className="mt-1 text-lg font-bold text-gray-900">
+              {campaign.id}
+            </p>
+          </div>
 
-      <form
-        onSubmit={handleSubmit}
-        className="bg-white shadow-md rounded-lg p-6 space-y-5"
-      >
+          <div>
+            <p className="text-sm font-semibold text-gray-500">Status</p>
+            <span
+              className={`mt-2 inline-flex rounded-full px-3 py-1 text-sm font-semibold ${
+                STATUS_STYLES[status] || STATUS_STYLES.active
+              }`}
+            >
+              {formatStatus(campaign.status)}
+            </span>
+          </div>
 
-        <div>
-          <label className="block mb-2 font-medium">
-            Campaign Name
-          </label>
+          <div>
+            <p className="text-sm font-semibold text-gray-500">Platform</p>
+            <p className="mt-1 text-lg font-bold text-gray-900">
+              {campaign.platform}
+            </p>
+          </div>
 
-          <input
-            type="text"
-            value={campaignName}
-            onChange={(e) => setCampaignName(e.target.value)}
-            placeholder="Enter campaign name"
-            className="w-full border rounded-md p-3"
-          />
+          <div>
+            <p className="text-sm font-semibold text-gray-500">Audience</p>
+            <p className="mt-1 text-lg font-bold text-gray-900">
+              {campaign.ageGroup}
+            </p>
+          </div>
+
+          <div>
+            <p className="text-sm font-semibold text-gray-500">Budget</p>
+            <p className="mt-1 text-lg font-bold text-gray-900">
+              {formatCurrency(campaign.budget)}
+            </p>
+          </div>
+
+          <div>
+            <p className="text-sm font-semibold text-gray-500">Created At</p>
+            <p className="mt-1 text-lg font-bold text-gray-900">
+              {campaign.createdAt
+                ? new Date(campaign.createdAt).toLocaleDateString()
+                : "Not available"}
+            </p>
+          </div>
         </div>
-
-        <div>
-          <label className="block mb-2 font-medium">
-            Platform
-          </label>
-
-          <select
-            value={platform}
-            onChange={(e) => setPlatform(e.target.value)}
-            className="w-full border rounded-md p-3"
-          >
-            <option value="">Select Platform</option>
-            <option>Google Ads</option>
-            <option>Facebook</option>
-            <option>Instagram</option>
-            <option>LinkedIn</option>
-          </select>
-        </div>
-
-        <div>
-          <label className="block mb-2 font-medium">
-            Budget
-          </label>
-
-          <input
-            type="number"
-            value={budget}
-            onChange={(e) => setBudget(e.target.value)}
-            placeholder="Enter budget"
-            className="w-full border rounded-md p-3"
-          />
-        </div>
-
-
-        <button
-          type="submit"
-          className="w-full bg-blue-600 text-white p-3 rounded-lg hover:bg-blue-700"
-        >
-          Save Campaign
-        </button>
-
-      </form>
+      </div>
     </div>
   );
 }

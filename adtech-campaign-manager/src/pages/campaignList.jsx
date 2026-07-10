@@ -1,165 +1,154 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
+import { Edit, Trash2 } from "lucide-react";
 import { useCampaigns } from "../hooks/useCampaigns";
 
-export default function CampaignList() {
-  const {
-    campaigns,
-    deleteCampaign,
-    toggleStatus,
-  } = useCampaigns();
+const STATUS_STYLES = {
+  active: "border-green-200 bg-green-100 text-green-700",
+  paused: "border-yellow-200 bg-yellow-100 text-yellow-700",
+  completed: "border-blue-200 bg-blue-100 text-blue-700",
+};
 
+function formatCurrency(value) {
+  return `\u20B9${Number(value).toLocaleString()}`;
+}
+
+export default function CampaignList() {
+  const { campaigns, deleteCampaign, updateCampaign } = useCampaigns();
   const [search, setSearch] = useState("");
 
-  const filteredCampaigns = campaigns.filter((campaign) =>
-    campaign.name.toLowerCase().includes(search.toLowerCase())
-  );
+  const filteredCampaigns = campaigns.filter((campaign) => {
+    const searchTerm = search.toLowerCase().trim();
+
+    return (
+      campaign.name.toLowerCase().includes(searchTerm) ||
+      String(campaign.id).toLowerCase().includes(searchTerm)
+    );
+  });
 
   return (
-    <div className="max-w-7xl mx-auto p-6">
-
-      {/* Header */}
-      <div className="flex items-center justify-between mb-6">
+    <div className="mx-auto max-w-7xl p-6">
+      <div className="mb-6 flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold">Campaigns</h1>
-          <p className="text-gray-500">
-            Manage all your campaigns
-          </p>
+          <p className="text-gray-500">Manage all your campaigns</p>
         </div>
 
         <Link
           to="/campaigns/new"
-          className="bg-blue-600 text-white px-5 py-2 rounded-lg hover:bg-blue-700"
+          className="rounded-lg bg-blue-600 px-5 py-2 text-white hover:bg-blue-700"
         >
           + Create Campaign
         </Link>
       </div>
 
-      {/* Search */}
       <input
         type="text"
         placeholder="Search Campaign..."
         value={search}
         onChange={(e) => setSearch(e.target.value)}
-        className="w-full border rounded-lg p-3 mb-6 focus:outline-none focus:ring-2 focus:ring-blue-500"
+        className="mb-6 w-full rounded-lg border p-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
       />
 
       {filteredCampaigns.length === 0 ? (
-        <div className="bg-gray-50 border rounded-lg p-10 text-center">
-          <h2 className="text-xl font-semibold">
-            No Campaigns Found
-          </h2>
-
-          <p className="text-gray-500 mt-2">
-            Create your first campaign.
-          </p>
+        <div className="rounded-lg border bg-gray-50 p-10 text-center">
+          <h2 className="text-xl font-semibold">No Campaigns Found</h2>
+          <p className="mt-2 text-gray-500">Create your first campaign.</p>
         </div>
       ) : (
-        <div className="bg-white rounded-xl shadow overflow-hidden">
-
+        <div className="overflow-hidden rounded-xl bg-white shadow">
           <table className="w-full">
-
             <thead className="bg-gray-100">
               <tr>
-                <th className="text-left p-4">Campaign</th>
-                <th className="text-left p-4">Platform</th>
-                <th className="text-left p-4">Audience</th>
-                <th className="text-right p-4">Budget</th>
-                <th className="text-center p-4">Status</th>
-                <th className="text-center p-4">Actions</th>
+                <th className="p-4 text-left">ID</th>
+                <th className="p-4 text-left">Campaign</th>
+                <th className="p-4 text-left">Platform</th>
+                <th className="p-4 text-left">Audience</th>
+                <th className="p-4 text-right">Budget</th>
+                <th className="p-4 text-center">Status</th>
+                <th className="p-4 text-center">Actions</th>
               </tr>
             </thead>
 
             <tbody>
+              {filteredCampaigns.map((campaign) => {
+                const status = String(campaign.status).toLowerCase();
 
-              {filteredCampaigns.map((campaign) => (
+                return (
+                  <tr
+                    key={campaign.id}
+                    className="border-t hover:bg-gray-50"
+                  >
+                    <td className="p-4 font-semibold text-gray-500">
+                      {campaign.id}
+                    </td>
 
-                <tr
-                  key={campaign.id}
-                  className="border-t hover:bg-gray-50"
-                >
-
-                  <td className="p-4 font-medium">
-                    {campaign.name}
-                  </td>
-
-                  <td className="p-4">
-                    {campaign.platform}
-                  </td>
-
-                  <td className="p-4">
-                    {campaign.ageGroup}
-                  </td>
-
-                  <td className="p-4 text-right">
-                    ₹{Number(campaign.budget).toLocaleString()}
-                  </td>
-
-                  <td className="p-4 text-center">
-
-                    <button
-                      onClick={() => toggleStatus(campaign.id)}
-                      className={`px-3 py-1 rounded-full text-sm text-white ${
-                        campaign.status === "active"
-                          ? "bg-green-600"
-                          : "bg-yellow-500"
-                      }`}
-                    >
-                      {campaign.status === "active"
-                        ? "Active"
-                        : "Paused"}
-                    </button>
-
-                  </td>
-
-                  <td className="p-4">
-
-                    <div className="flex justify-center gap-3">
-
+                    <td className="p-4 font-medium">
                       <Link
                         to={`/campaigns/${campaign.id}`}
-                        className="text-blue-600 hover:underline"
+                        className="text-blue-600 transition hover:text-blue-700 hover:underline"
                       >
-                        View
+                        {campaign.name}
                       </Link>
+                    </td>
+                    <td className="p-4">{campaign.platform}</td>
+                    <td className="p-4">{campaign.ageGroup}</td>
 
-                      <Link
-                        to={`/campaigns/${campaign.id}/edit`}
-                        className="text-green-600 hover:underline"
+                    <td className="p-4 text-right">
+                      {formatCurrency(campaign.budget)}
+                    </td>
+
+                    <td className="p-4 text-center">
+                      <select
+                        value={status}
+                        onChange={(e) =>
+                          updateCampaign(campaign.id, {
+                            status: e.target.value,
+                          })
+                        }
+                        className={`rounded-full border px-3 py-1 text-sm font-semibold capitalize outline-none ${
+                          STATUS_STYLES[status] || STATUS_STYLES.active
+                        }`}
                       >
-                        Edit
-                      </Link>
+                        <option value="active">Active</option>
+                        <option value="paused">Paused</option>
+                        <option value="completed">Completed</option>
+                      </select>
+                    </td>
 
-                      <button
-                        onClick={() => {
-                          if (
-                            window.confirm(
-                              "Delete this campaign?"
-                            )
-                          ) {
-                            deleteCampaign(campaign.id);
-                          }
-                        }}
-                        className="text-red-600 hover:underline"
-                      >
-                        Delete
-                      </button>
+                    <td className="p-4">
+                      <div className="flex justify-center gap-2">
+                        <Link
+                          to={`/campaigns/${campaign.id}/edit`}
+                          className="rounded-lg p-2 text-green-600 transition hover:bg-green-50"
+                          title="Edit campaign"
+                          aria-label="Edit campaign"
+                        >
+                          <Edit size={18} />
+                        </Link>
 
-                    </div>
-
-                  </td>
-
-                </tr>
-
-              ))}
-
+                        <button
+                          type="button"
+                          onClick={() => {
+                            if (window.confirm("Delete this campaign?")) {
+                              deleteCampaign(campaign.id);
+                            }
+                          }}
+                          className="rounded-lg p-2 text-red-600 transition hover:bg-red-50"
+                          title="Delete campaign"
+                          aria-label="Delete campaign"
+                        >
+                          <Trash2 size={18} />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
-
           </table>
-
         </div>
       )}
-
     </div>
   );
 }
