@@ -1,28 +1,33 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { ArrowLeft } from "lucide-react";
+import { useCampaigns } from "../hooks/useCampaigns.js";
 
 export default function CreateCampaign() {
   const navigate = useNavigate();
+  const { addCampaign } = useCampaigns();
 
   const [campaignName, setCampaignName] = useState("");
   const [platform, setPlatform] = useState("");
   const [budget, setBudget] = useState("");
+  const [ageGroup, setAgeGroup] = useState("");
 
   const handleSubmit = (e) => {
     e.preventDefault();
 
-    if (!campaignName || !platform || !budget) {
+    if (!campaignName || !platform || !budget || !ageGroup) {
       alert("Please fill all the fields");
       return;
     }
 
-    
-    console.log({
-      campaignName,
-      platform,
-      budget,
-    });
+    const newCampaign = {
+      name: campaignName,
+      platform: platform,
+      budget: budget,
+      ageGroup: ageGroup,
+    };
+
+    addCampaign(newCampaign);
 
     alert("Campaign Created Successfully!");
 
@@ -31,10 +36,7 @@ export default function CreateCampaign() {
 
   return (
     <div className="max-w-3xl mx-auto p-6">
-
-     
       <div className="flex items-center justify-between mb-8">
-
         <div>
           <h3 className="text-gray-500 text-sm">
             Audience & Budget
@@ -52,18 +54,15 @@ export default function CreateCampaign() {
           <ArrowLeft size={18} />
           Back
         </Link>
-
       </div>
 
-      
-
+     
       <form
         onSubmit={handleSubmit}
         className="bg-white shadow-md rounded-lg p-6 space-y-5"
       >
 
         
-
         <div>
           <label className="block mb-2 font-medium">
             Campaign Name
@@ -78,8 +77,7 @@ export default function CreateCampaign() {
           />
         </div>
 
-        
-
+       
         <div>
           <label className="block mb-2 font-medium">
             Platform
@@ -99,7 +97,25 @@ export default function CreateCampaign() {
         </div>
 
         
+        <div>
+          <label className="block mb-2 font-medium">
+            Audience
+          </label>
 
+          <select
+            value={ageGroup}
+            onChange={(e) => setAgeGroup(e.target.value)}
+            className="w-full border rounded-md p-3"
+          >
+            <option value="">Select Audience</option>
+            <option>18-24</option>
+            <option>25-34</option>
+            <option>35-44</option>
+            <option>All</option>
+          </select>
+        </div>
+
+        
         <div>
           <label className="block mb-2 font-medium">
             Budget
@@ -114,8 +130,6 @@ export default function CreateCampaign() {
           />
         </div>
 
-       
-
         <button
           type="submit"
           className="w-full bg-blue-600 text-white p-3 rounded-lg hover:bg-blue-700"
@@ -127,5 +141,3 @@ export default function CreateCampaign() {
     </div>
   );
 }
-
-
