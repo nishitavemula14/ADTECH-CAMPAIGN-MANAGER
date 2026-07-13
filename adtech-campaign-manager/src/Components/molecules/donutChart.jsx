@@ -1,31 +1,42 @@
 import { useState } from "react";
 
 const GROUP_COLORS = {
-  "Google Search": "#2563EB",
-  "Google Ads": "#2563EB",
-  Facebook: "#16A34A",
-  Instagram: "#DB2777",
-  LinkedIn: "#7C3AED",
-  YouTube: "#F97316",
-  Twitter: "#0891B2",
-  X: "#0F766E",
-  All: "#64748B",
-  "18-24": "#06B6D4",
-  "25-34": "#22C55E",
-  "35-44": "#F59E0B",
-  "35+": "#EF4444",
-  "45+": "#7C3AED",
+  "Google Search": "royalblue",
+  "Google Ads": "royalblue",
+  Facebook: "forestgreen",
+  Instagram: "mediumvioletred",
+  LinkedIn: "blueviolet",
+  YouTube: "darkorange",
+  Twitter: "darkcyan",
+  X: "teal",
+  All: "slategray",
+  "18-24": "darkturquoise",
+  "25-34": "limegreen",
+  "35-44": "orange",
+  "35+": "tomato",
+  "45+": "blueviolet",
 };
 
 const FALLBACK_COLORS = [
-  "#2563EB",
-  "#16A34A",
-  "#DB2777",
-  "#F97316",
-  "#7C3AED",
-  "#0891B2",
-  "#DC2626",
-  "#65A30D",
+  "royalblue",
+  "forestgreen",
+  "mediumvioletred",
+  "darkorange",
+  "blueviolet",
+  "darkcyan",
+  "firebrick",
+  "yellowgreen",
+];
+
+const DONUT_GRADIENTS = [
+  ["dodgerblue", "mediumturquoise"],
+  ["crimson", "hotpink"],
+  ["mediumseagreen", "lightseagreen"],
+  ["orange", "sandybrown"],
+  ["mediumslateblue", "royalblue"],
+  ["darkturquoise", "deepskyblue"],
+  ["tomato", "firebrick"],
+  ["yellowgreen", "olivedrab"],
 ];
 
 function formatCurrency(value) {
@@ -36,19 +47,60 @@ function getColor(name, index) {
   return GROUP_COLORS[name] || FALLBACK_COLORS[index % FALLBACK_COLORS.length];
 }
 
+function getGradient(index) {
+  return DONUT_GRADIENTS[index % DONUT_GRADIENTS.length];
+}
+
+function polarToCartesian(center, radius, angleInDegrees) {
+  const angleInRadians = ((angleInDegrees - 90) * Math.PI) / 180;
+
+  return {
+    x: center + radius * Math.cos(angleInRadians),
+    y: center + radius * Math.sin(angleInRadians),
+  };
+}
+
+function describeDonutSegment(startAngle, endAngle, outerRadius, innerRadius) {
+  const center = 60;
+  const largeArcFlag = endAngle - startAngle > 180 ? 1 : 0;
+  const outerStart = polarToCartesian(center, outerRadius, startAngle);
+  const outerEnd = polarToCartesian(center, outerRadius, endAngle);
+  const innerStart = polarToCartesian(center, innerRadius, startAngle);
+  const innerEnd = polarToCartesian(center, innerRadius, endAngle);
+
+  if (endAngle - startAngle >= 359.99) {
+    return [
+      `M ${center} ${center - outerRadius}`,
+      `A ${outerRadius} ${outerRadius} 0 1 1 ${center} ${center + outerRadius}`,
+      `A ${outerRadius} ${outerRadius} 0 1 1 ${center} ${center - outerRadius}`,
+      `M ${center} ${center - innerRadius}`,
+      `A ${innerRadius} ${innerRadius} 0 1 0 ${center} ${center + innerRadius}`,
+      `A ${innerRadius} ${innerRadius} 0 1 0 ${center} ${center - innerRadius}`,
+      "Z",
+    ].join(" ");
+  }
+
+  return [
+    `M ${outerStart.x} ${outerStart.y}`,
+    `A ${outerRadius} ${outerRadius} 0 ${largeArcFlag} 1 ${outerEnd.x} ${outerEnd.y}`,
+    `L ${innerEnd.x} ${innerEnd.y}`,
+    `A ${innerRadius} ${innerRadius} 0 ${largeArcFlag} 0 ${innerStart.x} ${innerStart.y}`,
+    "Z",
+  ].join(" ");
+}
+
 export default function BudgetDonutChart({
   data,
   totalBudget,
-  groupBy,
   selectedStatus,
   statusOptions,
   onStatusChange,
 }) {
   const [hoveredItem, setHoveredItem] = useState(null);
-  const radius = 42;
-  const circumference = 2 * Math.PI * radius;
-  const groupLabel = groupBy === "ageGroup" ? "Age" : "Platform";
-  const detailLabel = groupBy === "ageGroup" ? "Platform" : "Age";
+  const outerRadius = 51;
+  const innerRadius = 33;
+  const selectedStatusLabel =
+    selectedStatus.charAt(0).toUpperCase() + selectedStatus.slice(1);
 
   const segments = data.reduce((items, item, index) => {
     const previousOffset =
@@ -62,16 +114,26 @@ export default function BudgetDonutChart({
       {
         ...item,
         color: getColor(item.name, index),
+        gradient: getGradient(index),
         offset: previousOffset,
         percentage,
       },
     ];
   }, []);
+  const focusedItem = hoveredItem || null;
+  const centerValue = focusedItem
+    ? formatCurrency(focusedItem.budget)
+    : formatCurrency(totalBudget);
+  const centerLabel = focusedItem ? focusedItem.name : selectedStatusLabel;
+  const centerSubLabel = focusedItem
+    ? `${(focusedItem.percentage * 100).toFixed(1)}% of total`
+    : "total budget";
+  const tooltipCampaign = hoveredItem?.campaigns?.[0];
 
   return (
-    <div className="flex w-full flex-col items-center">
-      <div className="mb-5 flex w-full justify-center">
-        <div className="grid w-full max-w-md grid-cols-3 rounded-lg bg-gray-100 p-1">
+    <div className="relative flex h-full min-h-0 w-full flex-col overflow-hidden rounded-lg bg-slate-50 p-3 dark:bg-slate-950 sm:p-4">
+      <div className="mb-4 flex w-full shrink-0 justify-center">
+        <div className="grid w-full grid-cols-3 rounded-lg bg-gray-100 p-1 dark:bg-slate-800 sm:inline-flex sm:w-auto">
           {statusOptions.map((status) => {
             const isActive = selectedStatus === status.value;
 
@@ -80,10 +142,10 @@ export default function BudgetDonutChart({
                 key={status.value}
                 type="button"
                 onClick={() => onStatusChange(status.value)}
-                className={`rounded-md px-3 py-2 text-sm font-semibold transition ${
+                className={`h-9 rounded-md px-2 text-xs font-semibold transition sm:min-w-24 sm:px-3 sm:text-sm ${
                   isActive
                     ? "bg-blue-600 text-white shadow"
-                    : "text-gray-600 hover:bg-white hover:text-gray-900"
+                    : "text-gray-600 hover:bg-white hover:text-gray-900 dark:text-slate-300 dark:hover:bg-slate-700 dark:hover:text-white"
                 }`}
               >
                 {status.label}
@@ -93,146 +155,164 @@ export default function BudgetDonutChart({
         </div>
       </div>
 
-      <div className="relative h-56 w-56">
-        {data.length > 0 ? (
-          <>
-            <svg viewBox="0 0 120 120" className="h-full w-full -rotate-90">
-              <circle
-                cx="60"
-                cy="60"
-                r={radius}
-                fill="none"
-                stroke="#E5E7EB"
-                strokeWidth="18"
-              />
+      <div className="grid min-h-0 w-full flex-1 grid-cols-1 gap-4 overflow-visible lg:grid-cols-[minmax(230px,0.78fr)_minmax(0,1fr)]">
+        <div className="relative flex min-h-0 items-center justify-center">
+          <div className="relative h-44 w-44 shrink-0 sm:h-52 sm:w-52">
+            {data.length > 0 ? (
+              <>
+                <svg
+                  viewBox="0 0 120 120"
+                  className="h-full w-full"
+                >
+                  <defs>
+                    {segments.map((item, index) => (
+                      <linearGradient
+                        key={item.name}
+                        id={`donut-gradient-${index}`}
+                        x1="24"
+                        x2="96"
+                        y1="24"
+                        y2="96"
+                        gradientUnits="userSpaceOnUse"
+                      >
+                        <stop offset="0%" stopColor={item.gradient[0]} />
+                        <stop offset="100%" stopColor={item.gradient[1]} />
+                      </linearGradient>
+                    ))}
+                  </defs>
 
-              {segments.map((item) => {
-                const length = item.percentage * circumference;
-                const dashOffset = -item.offset * circumference;
-                return (
                   <circle
-                    key={item.name}
                     cx="60"
                     cy="60"
-                    r={radius}
+                    r="42"
                     fill="none"
-                    stroke={item.color}
+                    stroke="currentColor"
                     strokeWidth="18"
-                    strokeDasharray={`${length} ${circumference}`}
-                    strokeDashoffset={dashOffset}
-                    strokeLinecap="round"
-                    className="cursor-pointer transition-all duration-300 hover:opacity-80"
-                    onMouseEnter={() =>
-                      setHoveredItem({
-                        ...item,
-                        percentage: item.percentage * 100,
-                      })
-                    }
-                    onMouseLeave={() => setHoveredItem(null)}
+                    className="text-gray-200 dark:text-slate-800"
                   />
-                );
-              })}
-            </svg>
 
-            <div className="absolute inset-0 flex flex-col items-center justify-center">
-              <p className="text-xs text-gray-500">
-                {selectedStatus.charAt(0).toUpperCase() + selectedStatus.slice(1)}
-              </p>
-              <h2 className="text-lg font-bold">
-                {formatCurrency(totalBudget)}
-              </h2>
-            </div>
-          </>
-        ) : (
-          <div className="flex h-full w-full items-center justify-center rounded-full border-[18px] border-gray-200">
-            <div className="px-4 text-center">
-              <p className="text-xs font-medium text-gray-500">
-                {selectedStatus.charAt(0).toUpperCase() + selectedStatus.slice(1)}
-              </p>
-              <p className="mt-1 text-sm font-bold text-gray-400">
-                No {selectedStatus} data
-              </p>
-            </div>
-          </div>
-        )}
+                  {segments.map((item, index) => {
+                    const startAngle = item.offset * 360;
+                    const endAngle = startAngle + item.percentage * 360;
+                    const isFocused = focusedItem?.name === item.name;
 
-        {hoveredItem && (
-          <div className="absolute left-1/2 top-1/2 z-10 w-64 -translate-x-1/2 translate-y-6 rounded-lg border border-gray-200 bg-white p-3 text-left shadow-lg">
-            <div className="mb-2 flex items-center gap-2">
-              <span
-                className="h-3 w-3 rounded-full"
-                style={{ backgroundColor: hoveredItem.color }}
-              />
-              <p
-                className="text-sm font-bold"
-                style={{ color: hoveredItem.color }}
-              >
-                {groupLabel}: {hoveredItem.name}
-              </p>
-            </div>
+                    return (
+                      <path
+                        key={item.name}
+                        d={describeDonutSegment(
+                          startAngle,
+                          endAngle,
+                          outerRadius,
+                          innerRadius
+                        )}
+                        fill={`url(#donut-gradient-${index})`}
+                        fillRule="evenodd"
+                        className={`cursor-pointer drop-shadow-sm transition-all duration-300 dark:drop-shadow-none ${
+                          focusedItem && !isFocused
+                            ? "opacity-35"
+                            : "opacity-100 hover:brightness-110"
+                        }`}
+                        onMouseEnter={() => setHoveredItem(item)}
+                        onMouseLeave={() => setHoveredItem(null)}
+                      />
+                    );
+                  })}
+                </svg>
 
-            <p className="text-sm font-semibold text-emerald-600">
-              Budget: {formatCurrency(hoveredItem.budget)}
-            </p>
-            <p className="text-xs font-medium text-sky-600">
-              {hoveredItem.percentage.toFixed(1)}% of total
-            </p>
-
-            <div className="mt-2 max-h-28 space-y-1 overflow-auto border-t border-gray-100 pt-2">
-              {hoveredItem.campaigns.map((campaign) => (
-                <div key={campaign.id} className="text-xs leading-5">
-                  <p className="font-semibold text-violet-600">
-                    {campaign.name}
+                <div className="absolute inset-0 flex flex-col items-center justify-center px-6 text-center">
+                  <p className="max-w-24 truncate text-[11px] font-semibold uppercase tracking-wide text-gray-500 dark:text-slate-400">
+                    {centerLabel}
                   </p>
-                  <p className="text-rose-600">
-                    {detailLabel}:{" "}
-                    {groupBy === "ageGroup"
-                      ? campaign.platform
-                      : campaign.ageGroup}
-                  </p>
-                  <p className="text-emerald-600">
-                    Budget: {formatCurrency(campaign.budget)}
+                  <h2 className="mt-1 text-xl font-bold leading-tight">
+                    {centerValue}
+                  </h2>
+                  <p className="mt-1 text-[11px] text-gray-500 dark:text-slate-400">
+                    {centerSubLabel}
                   </p>
                 </div>
-              ))}
-            </div>
+              </>
+            ) : (
+              <div className="flex h-full w-full items-center justify-center rounded-full border-[18px] border-gray-200 dark:border-slate-800">
+                <div className="px-4 text-center">
+                  <p className="text-xs font-medium text-gray-500 dark:text-slate-400">
+                    {selectedStatusLabel}
+                  </p>
+                  <p className="mt-1 text-sm font-bold text-gray-400 dark:text-slate-500">
+                    No {selectedStatus} data
+                  </p>
+                </div>
+              </div>
+            )}
           </div>
-        )}
-      </div>
+        </div>
 
-      {segments.length > 0 && (
-      <div className="mt-6 grid w-full grid-cols-1 gap-3 sm:grid-cols-2">
-        {segments.map((item) => {
-          const percentage =
-            totalBudget === 0
-              ? 0
-              : ((item.budget / totalBudget) * 100).toFixed(0);
+        <div className="min-h-0 overflow-hidden">
+          {segments.length > 0 ? (
+            <div className="flex h-full flex-col justify-center gap-3">
+              {segments.map((item) => {
+                const percentage =
+                  totalBudget === 0
+                    ? 0
+                    : ((item.budget / totalBudget) * 100).toFixed(1);
 
-          return (
-            <div
-              key={item.name}
-              className="rounded-lg border bg-white p-3 shadow-sm transition hover:shadow-md"
-            >
-              <div className="flex items-center gap-2">
-                <span
-                  className="h-3 w-3 rounded-full"
-                  style={{ backgroundColor: item.color }}
-                />
-                <p className="text-sm font-semibold">{item.name}</p>
-              </div>
+                return (
+                  <div
+                    key={item.name}
+                    className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3"
+                  >
+                    <div className="min-w-0">
+                      <div className="flex items-center gap-2">
+                        <span
+                          className="h-3.5 w-3.5 shrink-0 rounded-full"
+                          style={{
+                            background: `linear-gradient(135deg, ${item.gradient[0]}, ${item.gradient[1]})`,
+                          }}
+                        />
+                        <p className="truncate text-sm font-semibold text-gray-800 dark:text-slate-200">
+                          {item.name}
+                        </p>
+                      </div>
+                    </div>
 
-              <div className="mt-2">
-                <p className="text-sm font-bold text-gray-800">
-                  {formatCurrency(item.budget)}
-                </p>
-                <p className="text-xs text-gray-500">
-                  {percentage}% of total
-                </p>
-              </div>
+                    <div className="text-right">
+                      <p className="text-sm font-bold text-gray-900 dark:text-slate-100">
+                        {percentage}%
+                      </p>
+                    </div>
+                  </div>
+                );
+              })}
             </div>
-          );
-        })}
+          ) : (
+            <div className="flex h-full items-center justify-center rounded-lg border border-dashed border-gray-200 p-6 text-center text-sm font-semibold text-gray-400 dark:border-slate-800 dark:text-slate-500">
+              No {selectedStatus} campaign values
+            </div>
+          )}
+        </div>
       </div>
+
+      {hoveredItem && tooltipCampaign && (
+        <div className="pointer-events-none absolute left-1/2 top-24 z-20 w-56 -translate-x-1/2 rounded-lg border border-gray-200 bg-white p-3 text-sm shadow-xl dark:border-slate-700 dark:bg-slate-900 sm:left-[210px] sm:top-28 sm:translate-x-0">
+          <p className="truncate font-bold text-violet-600">
+            {tooltipCampaign.name}
+          </p>
+          <p className="mt-1 font-semibold text-emerald-600">
+            Budget: {formatCurrency(tooltipCampaign.budget)}
+          </p>
+          <p className="text-sky-600">
+            Platform: {tooltipCampaign.platform}
+          </p>
+          <p className="text-rose-600">
+            Age: {tooltipCampaign.ageGroup}
+          </p>
+
+          {hoveredItem.campaigns.length > 1 && (
+            <p className="mt-2 text-xs font-semibold text-gray-500 dark:text-slate-400">
+              +{hoveredItem.campaigns.length - 1} more campaign
+              {hoveredItem.campaigns.length - 1 === 1 ? "" : "s"}
+            </p>
+          )}
+        </div>
       )}
     </div>
   );

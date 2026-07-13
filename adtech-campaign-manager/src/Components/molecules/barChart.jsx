@@ -28,82 +28,76 @@ export default function BarChart({ data }) {
   ];
 
   return (
-    <div className="relative w-full rounded-lg bg-slate-50 p-4">
-      <div className="mb-5 flex items-center justify-between gap-4">
+    <div className="relative flex h-full min-h-0 w-full flex-col overflow-hidden rounded-lg bg-slate-50 p-3 dark:bg-slate-950 sm:p-4">
+      <div className="mb-5 flex shrink-0 items-center justify-between gap-4">
         <div>
-          <p className="text-sm font-semibold text-gray-900">
+          <p className="text-sm font-semibold text-gray-900 dark:text-slate-100">
             Budget Performance
           </p>
-          <p className="text-xs text-gray-500">
-            Highest active campaign: {formatCurrency(maxBudget)}
-          </p>
-        </div>
-
-        <span className="rounded-full bg-white px-3 py-1 text-xs font-semibold text-blue-600 shadow-sm">
-          Top {data.length}
-        </span>
+        </div>    
       </div>
 
-      <div className="flex gap-3">
-        <div className="flex h-72 flex-col justify-between pr-1 text-right text-xs font-medium text-gray-500">
+      <div className="flex min-h-0 flex-1 gap-2 overflow-hidden sm:gap-3">
+        <div className="flex h-full min-h-56 shrink-0 flex-col justify-between pr-1 text-right text-[10px] font-medium text-gray-500 dark:text-slate-400 sm:min-h-48 sm:text-xs">
           {yAxisValues.map((value) => (
             <span key={value}>{formatCurrency(value)}</span>
           ))}
         </div>
 
-        <div className="relative flex-1">
-          <div className="absolute inset-0 flex flex-col justify-between">
-            {yAxisValues.map((value) => (
-              <span key={value} className="border-t border-dashed border-gray-200" />
-            ))}
-          </div>
+        <div className="flex min-w-0 flex-1 flex-col">
+          <div className="relative min-h-56 flex-1 sm:min-h-48">
+            <div className="absolute inset-0 flex flex-col justify-between">
+              {yAxisValues.map((value) => (
+                <span key={value} className="border-t border-dashed border-gray-200 dark:border-slate-800" />
+              ))}
+            </div>
 
-          <div className="relative flex h-72 items-end justify-around gap-4 border-b border-l border-gray-300 px-3">
-            {data.map((campaign, index) => {
-              const budget = Number(campaign.budget);
-              const height = Math.max((budget / maxBudget) * 100, 6);
-              const color = BAR_COLORS[index % BAR_COLORS.length];
+            <div className="relative flex h-full items-end justify-around gap-2 border-b border-l border-gray-300 px-2 dark:border-slate-700 sm:gap-4 sm:px-3">
+              {data.map((campaign, index) => {
+                const budget = Number(campaign.budget);
+                const height = Math.max((budget / maxBudget) * 100, 6);
+                const color = BAR_COLORS[index % BAR_COLORS.length];
 
-              return (
-                <div
-                  key={campaign.id}
-                  className="group flex h-full min-w-14 flex-1 flex-col items-center justify-end"
-                  onMouseEnter={() => setHoveredCampaign(campaign)}
-                  onMouseLeave={() => setHoveredCampaign(null)}
-                >
-                  <p className="mb-2 rounded-full bg-white px-2 py-1 text-xs font-bold text-gray-700 opacity-0 shadow-sm transition group-hover:opacity-100">
-                    {formatCurrency(budget)}
-                  </p>
-
+                return (
                   <div
-                    className={`w-full max-w-14 rounded-t-lg bg-gradient-to-t ${color} shadow-lg shadow-blue-100 transition-all duration-300 group-hover:scale-x-110 group-hover:brightness-110`}
-                    style={{ height: `${height}%` }}
-                  />
-                </div>
-              );
-            })}
+                    key={campaign.id}
+                    className="group flex h-full min-w-0 flex-1 flex-col items-center justify-end"
+                    onMouseEnter={() => setHoveredCampaign(campaign)}
+                    onMouseLeave={() => setHoveredCampaign(null)}
+                  >
+                    <p className="mb-2 rounded-full bg-white px-2 py-1 text-xs font-bold text-gray-700 opacity-0 shadow-sm transition group-hover:opacity-100 dark:bg-slate-900 dark:text-slate-200">
+                      {formatCurrency(budget)}
+                    </p>
+
+                    <div
+                      className={`w-full max-w-14 rounded-t-lg bg-gradient-to-t ${color} shadow-lg shadow-blue-100 transition-all duration-300 group-hover:scale-x-105 group-hover:brightness-110 dark:shadow-none`}
+                      style={{ height: `${height}%` }}
+                    />
+                  </div>
+                );
+              })}
+            </div>
           </div>
 
-          <div className="mt-4 flex justify-around gap-4 px-3">
+          <div
+            className="grid shrink-0 gap-2 px-2 pt-3 sm:gap-4 sm:px-3"
+            style={{ gridTemplateColumns: `repeat(${data.length}, minmax(0, 1fr))` }}
+          >
             {data.map((campaign) => (
-              <div
+              <p
                 key={campaign.id}
-                className="min-w-14 flex-1 text-center"
+                title={campaign.name}
+                className="line-clamp-2 min-w-0 text-center text-[11px] font-semibold leading-tight text-gray-700 dark:text-slate-200 sm:text-xs"
               >
-                <p className="line-clamp-2 text-xs font-semibold text-gray-700">
-                  {campaign.name}
-                </p>
-                <p className="mt-1 text-[11px] text-gray-500">
-                  {campaign.platform}
-                </p>
-              </div>
+                {campaign.name}
+              </p>
             ))}
           </div>
         </div>
       </div>
 
       {hoveredCampaign && (
-        <div className="absolute right-4 top-20 z-10 w-56 rounded-lg border border-gray-200 bg-white p-3 text-sm shadow-xl">
+        <div className="absolute right-4 top-20 z-10 w-56 rounded-lg border border-gray-200 bg-white p-3 text-sm shadow-xl dark:border-slate-700 dark:bg-slate-900">
           <p className="font-bold text-violet-600">
             {hoveredCampaign.name}
           </p>
