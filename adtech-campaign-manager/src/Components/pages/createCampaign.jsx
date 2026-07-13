@@ -1,0 +1,173 @@
+import { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { ArrowLeft } from "lucide-react";
+import toast from "react-hot-toast";
+import { useCampaigns } from "../../hooks/useCampaigns.js";
+
+export default function CreateCampaign() {
+  const navigate = useNavigate();
+  const { campaigns, addCampaign } = useCampaigns();
+
+  const [campaignName, setCampaignName] = useState("");
+  const [platform, setPlatform] = useState("");
+  const [budget, setBudget] = useState("");
+  const [ageGroup, setAgeGroup] = useState("");
+  const normalizedCampaignName = campaignName.trim().toLowerCase();
+  const isDuplicateName =
+    normalizedCampaignName !== "" &&
+    campaigns.some(
+      (campaign) =>
+        String(campaign.name).trim().toLowerCase() === normalizedCampaignName
+    );
+
+  function handleSubmit(e) {
+    e.preventDefault();
+
+    if (
+      campaignName.trim() === "" ||
+      platform === "" ||
+      ageGroup === "" ||
+      Number(budget) <= 0
+    ) {
+      toast.error("Please fill all the fields");
+      return;
+    }
+
+    if (isDuplicateName) {
+      toast.error("Campaign name already exists");
+      return;
+    }
+
+    const newCampaign = {
+      name: campaignName.trim(),
+      platform,
+      budget,
+      ageGroup,
+    };
+
+    addCampaign(newCampaign);
+
+    toast.success("Campaign Created Successfully!");
+
+    navigate("/campaigns");
+  }
+
+  return (
+    <div className="mx-auto max-w-3xl p-3 sm:p-4 md:p-6">
+      <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <h3 className="text-sm text-gray-500 dark:text-slate-400">
+            Audience & Budget
+          </h3>
+
+          <h1 className="text-2xl font-bold sm:text-3xl">
+            Create Campaign
+          </h1>
+        </div>
+
+        <Link
+          to="/campaigns"
+          className="flex w-full items-center justify-center gap-2 rounded-lg border border-gray-300 px-4 py-2 text-gray-700 transition hover:bg-gray-100 dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-800 sm:w-auto"
+        >
+          <ArrowLeft size={18} />
+          Back
+        </Link>
+      </div>
+
+      <form
+        onSubmit={handleSubmit}
+        className="space-y-5 rounded-lg bg-white p-4 shadow-md dark:bg-slate-900 sm:p-6"
+      >
+        <div>
+          <label className="mb-2 block font-medium text-gray-900 dark:text-slate-100">
+            Campaign Name
+          </label>
+
+          <input
+            type="text"
+            value={campaignName}
+            onChange={(e) =>
+              setCampaignName(e.target.value)
+            }
+            placeholder="Enter campaign name"
+            className={`w-full rounded-md border p-3 focus:outline-none ${
+              isDuplicateName
+                ? "border-red-500 bg-red-50 text-red-700 focus:border-red-500 dark:bg-red-950/40 dark:text-red-200"
+                : "border-gray-300 bg-white text-gray-900 focus:border-blue-500 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100"
+            }`}
+          />
+
+          {isDuplicateName && (
+            <p className="mt-2 text-sm font-semibold text-red-600">
+              This name already exists.
+            </p>
+          )}
+        </div>
+
+        <div>
+          <label className="mb-2 block font-medium text-gray-900 dark:text-slate-100">
+            Platform
+          </label>
+
+          <select
+            value={platform}
+            onChange={(e) =>
+              setPlatform(e.target.value)
+            }
+            className="w-full rounded-md border border-gray-300 bg-white p-3 text-gray-900 focus:border-blue-500 focus:outline-none dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100"
+          >
+            <option value="">Select Platform</option>
+            <option>Google Ads</option>
+            <option>Facebook</option>
+            <option>Instagram</option>
+            <option>LinkedIn</option>
+          </select>
+        </div>
+
+        <div>
+          <label className="mb-2 block font-medium text-gray-900 dark:text-slate-100">
+            Audience
+          </label>
+
+          <select
+            value={ageGroup}
+            onChange={(e) =>
+              setAgeGroup(e.target.value)
+            }
+            className="w-full rounded-md border border-gray-300 bg-white p-3 text-gray-900 focus:border-blue-500 focus:outline-none dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100"
+          >
+            <option value="">Select Audience</option>
+            <option>18-24</option>
+            <option>25-34</option>
+            <option>35-44</option>
+            <option>45+</option>
+          </select>
+        </div>
+        <div>
+          <label className="mb-2 block font-medium text-gray-900 dark:text-slate-100">
+            Budget
+          </label>
+
+          <input
+            type="number"
+            min="1"
+            value={budget}
+            onChange={(e) =>
+              setBudget(
+                e.target.value.replace(/\D/g, "")
+              )
+            }
+            placeholder="Enter budget"
+            className="w-full rounded-md border border-gray-300 bg-white p-3 text-gray-900 focus:border-blue-500 focus:outline-none dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100"
+          />
+        </div>
+        <button
+          type="submit"
+          className="w-full rounded-lg bg-blue-600 p-3 text-white transition hover:bg-blue-700"
+        >
+          Save Campaign
+        </button>
+      </form>
+    </div>
+  );
+}
