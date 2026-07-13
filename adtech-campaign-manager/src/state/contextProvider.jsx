@@ -1,28 +1,11 @@
-import { useState, useEffect } from "react";
 import { CampaignContext } from "../hooks/useCampaigns";
+import { useLocalStorage } from "../hooks/useLocalStorage";
 import { seedCampaigns } from "../data/seed.js";
 
 const STORAGE_KEY = "campaigns";
 
 export function CampaignProvider({ children }) {
-
-  const [campaigns, setCampaigns] = useState(() => {
-    try {
-      const storedCampaigns = localStorage.getItem(STORAGE_KEY);
-
-      if (storedCampaigns) {
-        return JSON.parse(storedCampaigns);
-      }
-
-      return seedCampaigns;
-    } catch {
-      return seedCampaigns;
-    }
-  });
-
-  useEffect(() => {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(campaigns));
-  }, [campaigns]);
+  const [campaigns, setCampaigns] = useLocalStorage(STORAGE_KEY, seedCampaigns);
 
   function addCampaign(newCampaign) {
     setCampaigns((prevCampaigns) => {
@@ -36,6 +19,8 @@ export function CampaignProvider({ children }) {
         ...newCampaign,
         id: nextId.toString(),
         status: newCampaign.status || "active",
+        budget: Number(newCampaign.budget),
+        createdAt: new Date().toISOString(),
       };
 
       return [...prevCampaigns, campaign];
@@ -46,7 +31,15 @@ export function CampaignProvider({ children }) {
     setCampaigns((prevCampaigns) =>
       prevCampaigns.map((campaign) =>
         campaign.id === id
-          ? { ...campaign, ...updatedCampaign }
+          ? {
+              ...campaign,
+              ...updatedCampaign,
+              budget:
+                updatedCampaign.budget === undefined
+                  ? campaign.budget
+                  : Number(updatedCampaign.budget),
+              updatedAt: new Date().toISOString(),
+            }
           : campaign
       )
     );

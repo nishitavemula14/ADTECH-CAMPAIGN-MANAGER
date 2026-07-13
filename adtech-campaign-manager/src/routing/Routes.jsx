@@ -1,10 +1,10 @@
 import {Navigate , Route, Routes } from "react-router-dom";
 import AppLayout from "../Components/templates/appLayout.jsx";
-import CampaignDetail from "../pages/details.jsx";
-import CampaignList from "../pages/campaignList.jsx";
-import CreateCampaign from "../pages/createCampaign.jsx";
-import Dashboard from "../pages/dashboard.jsx";
-import EditCampaign from "../pages/edit.jsx";
+import CampaignDetail from "../Components/pages/details.jsx";
+import CampaignList from "../Components/pages/campaignList.jsx";
+import CreateCampaign from "../Components/pages/createCampaign.jsx";
+import Dashboard from "../Components/pages/dashboard.jsx";
+import EditCampaign from "../Components/pages/edit.jsx";
 
 export default function AppRoutes() {
     return (
