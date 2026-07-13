@@ -112,10 +112,10 @@ export default function CampaignList() {
                       {campaign.id}
                     </td>
 
-                    <td className="p-4 font-medium">
+                    <td className="max-w-72 p-4 align-top font-medium">
                       <Link
                         to={`/campaigns/${campaign.id}`}
-                        className="text-blue-600 transition hover:text-blue-700 hover:underline"
+                        className="block whitespace-normal break-words leading-snug text-blue-600 transition hover:text-blue-700 hover:underline"
                       >
                         {campaign.name}
                       </Link>

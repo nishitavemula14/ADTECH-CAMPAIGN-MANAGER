@@ -36,3 +36,15 @@ body,
 .campaign-list-scrollbar::-webkit-scrollbar-thumb:hover {
   background-color: slategray;
 }
+
+.number-input-no-spinner {
+  appearance: textfield;
+  -moz-appearance: textfield;
+}
+
+.number-input-no-spinner::-webkit-inner-spin-button,
+.number-input-no-spinner::-webkit-outer-spin-button {
+  appearance: none;
+  -webkit-appearance: none;
+  margin: 0;
+}

@@ -43,6 +43,20 @@ function formatCurrency(value) {
   return `\u20B9${Number(value).toLocaleString()}`;
 }
 
+function formatCompactCurrency(value) {
+  const amount = Number(value);
+
+  if (amount >= 10000000) {
+    return `\u20B9${(amount / 10000000).toFixed(2)} Cr`;
+  }
+
+  if (amount >= 100000) {
+    return `\u20B9${(amount / 100000).toFixed(2)} L`;
+  }
+
+  return formatCurrency(amount);
+}
+
 function getColor(name, index) {
   return GROUP_COLORS[name] || FALLBACK_COLORS[index % FALLBACK_COLORS.length];
 }
@@ -122,8 +136,8 @@ export default function BudgetDonutChart({
   }, []);
   const focusedItem = hoveredItem || null;
   const centerValue = focusedItem
-    ? formatCurrency(focusedItem.budget)
-    : formatCurrency(totalBudget);
+    ? formatCompactCurrency(focusedItem.budget)
+    : formatCompactCurrency(totalBudget);
   const centerLabel = focusedItem ? focusedItem.name : selectedStatusLabel;
   const centerSubLabel = focusedItem
     ? `${(focusedItem.percentage * 100).toFixed(1)}% of total`
@@ -223,7 +237,10 @@ export default function BudgetDonutChart({
                   <p className="max-w-24 truncate text-[11px] font-semibold uppercase tracking-wide text-gray-500 dark:text-slate-400">
                     {centerLabel}
                   </p>
-                  <h2 className="mt-1 text-xl font-bold leading-tight">
+                  <h2
+                    className="mt-1 max-w-28 whitespace-nowrap text-center text-lg font-bold leading-tight sm:text-xl"
+                    title={focusedItem ? formatCurrency(focusedItem.budget) : formatCurrency(totalBudget)}
+                  >
                     {centerValue}
                   </h2>
                   <p className="mt-1 text-[11px] text-gray-500 dark:text-slate-400">

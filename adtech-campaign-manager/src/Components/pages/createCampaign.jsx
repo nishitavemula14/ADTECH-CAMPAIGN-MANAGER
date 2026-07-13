@@ -3,6 +3,16 @@ import { Link, useNavigate } from "react-router-dom";
 import { ArrowLeft } from "lucide-react";
 import toast from "react-hot-toast";
 import { useCampaigns } from "../../hooks/useCampaigns.js";
+import {
+  CAMPAIGN_NAME_CHARACTER_LIMIT,
+  getCampaignNameCharacterCount,
+  limitCampaignNameCharacters,
+} from "../../lib/campaignName.js";
+import {
+  MAX_CAMPAIGN_BUDGET,
+  MAX_CAMPAIGN_BUDGET_LABEL,
+  limitCampaignBudget,
+} from "../../lib/budget.js";
 
 export default function CreateCampaign() {
   const navigate = useNavigate();
@@ -12,6 +22,7 @@ export default function CreateCampaign() {
   const [platform, setPlatform] = useState("");
   const [budget, setBudget] = useState("");
   const [ageGroup, setAgeGroup] = useState("");
+  const campaignNameCharacterCount = getCampaignNameCharacterCount(campaignName);
   const normalizedCampaignName = campaignName.trim().toLowerCase();
   const isDuplicateName =
     normalizedCampaignName !== "" &&
@@ -30,6 +41,16 @@ export default function CreateCampaign() {
       Number(budget) <= 0
     ) {
       toast.error("Please fill all the fields");
+      return;
+    }
+
+    if (Number(budget) > MAX_CAMPAIGN_BUDGET) {
+      toast.error(`Budget cannot be more than ${MAX_CAMPAIGN_BUDGET_LABEL}`);
+      return;
+    }
+
+    if (campaignName.trim().length > CAMPAIGN_NAME_CHARACTER_LIMIT) {
+      toast.error("Campaign name must be 30 characters or less");
       return;
     }
 
@@ -86,8 +107,9 @@ export default function CreateCampaign() {
           <input
             type="text"
             value={campaignName}
+            maxLength={CAMPAIGN_NAME_CHARACTER_LIMIT}
             onChange={(e) =>
-              setCampaignName(e.target.value)
+              setCampaignName(limitCampaignNameCharacters(e.target.value))
             }
             placeholder="Enter campaign name"
             className={`w-full rounded-md border p-3 focus:outline-none ${
@@ -96,6 +118,10 @@ export default function CreateCampaign() {
                 : "border-gray-300 bg-white text-gray-900 focus:border-blue-500 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100"
             }`}
           />
+
+          <p className="mt-2 text-sm text-gray-500 dark:text-slate-400">
+            {campaignNameCharacterCount}/{CAMPAIGN_NAME_CHARACTER_LIMIT} characters
+          </p>
 
           {isDuplicateName && (
             <p className="mt-2 text-sm font-semibold text-red-600">
@@ -151,15 +177,20 @@ export default function CreateCampaign() {
           <input
             type="number"
             min="1"
+            max={MAX_CAMPAIGN_BUDGET}
             value={budget}
             onChange={(e) =>
               setBudget(
-                e.target.value.replace(/\D/g, "")
+                limitCampaignBudget(e.target.value)
               )
             }
             placeholder="Enter budget"
-            className="w-full rounded-md border border-gray-300 bg-white p-3 text-gray-900 focus:border-blue-500 focus:outline-none dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100"
+            className="number-input-no-spinner w-full rounded-md border border-gray-300 bg-white p-3 text-gray-900 focus:border-blue-500 focus:outline-none dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100"
           />
+
+          <p className="mt-2 text-sm text-gray-500 dark:text-slate-400">
+            Maximum budget: {MAX_CAMPAIGN_BUDGET_LABEL}
+          </p>
         </div>
         <button
           type="submit"
