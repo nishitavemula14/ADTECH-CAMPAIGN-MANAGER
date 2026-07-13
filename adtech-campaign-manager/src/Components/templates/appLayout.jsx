@@ -9,41 +9,33 @@ import ThemeSwitcher from "../molecules/themeSwitcher.jsx";
 
 export default function AppLayout() {
   return (
-    <div className="flex h-screen overflow-hidden bg-gray-100">
-
-      {/* Sidebar */}
-      <aside className="flex h-screen w-64 shrink-0 flex-col border-r bg-white p-5 shadow-sm">
-
-        {/* Logo */}
-        <div className="flex items-center gap-3 mb-8">
-
-          <div className="w-12 h-12 bg-blue-600 text-white rounded-lg flex items-center justify-center font-bold">
+    <div className="flex min-h-screen flex-col overflow-visible bg-gray-100 text-gray-950 transition-colors dark:bg-slate-950 dark:text-slate-100 lg:h-screen lg:flex-row lg:overflow-hidden">
+      <aside className="flex shrink-0 flex-col border-b border-gray-200 bg-white p-4 shadow-sm transition-colors dark:border-slate-800 dark:bg-slate-900 lg:h-screen lg:w-64 lg:border-b-0 lg:border-r lg:p-5">
+        <div className="mb-4 flex items-center gap-3 lg:mb-8">
+          <div className="flex h-11 w-11 items-center justify-center rounded-lg bg-blue-600 font-bold text-white lg:h-12 lg:w-12">
             ACM
           </div>
 
           <div>
-            <h2 className="font-bold text-lg">
+            <h2 className="text-lg font-bold">
               AdTech
             </h2>
 
-            <p className="text-gray-500 text-sm">
+            <p className="text-sm text-gray-500 dark:text-slate-400">
               Campaign Manager
             </p>
           </div>
 
         </div>
-
-        {/* Navigation */}
-
-        <nav className="flex flex-col gap-2">
+        <nav className="flex gap-2 overflow-x-auto pb-1 lg:flex-col lg:overflow-visible lg:pb-0">
 
           <NavLink
             to="/"
             className={({ isActive }) =>
-              `flex items-center gap-3 px-3 py-2 rounded-lg ${
+              `flex shrink-0 items-center gap-3 rounded-lg px-3 py-2 ${
                 isActive
                   ? "bg-blue-600 text-white"
-                  : "hover:bg-gray-100"
+                  : "text-gray-700 hover:bg-gray-100 dark:text-slate-300 dark:hover:bg-slate-800"
               }`
             }
           >
@@ -54,10 +46,10 @@ export default function AppLayout() {
           <NavLink
             to="/campaigns"
             className={({ isActive }) =>
-              `flex items-center gap-3 px-3 py-2 rounded-lg ${
+              `flex shrink-0 items-center gap-3 rounded-lg px-3 py-2 ${
                 isActive
                   ? "bg-blue-600 text-white"
-                  : "hover:bg-gray-100"
+                  : "text-gray-700 hover:bg-gray-100 dark:text-slate-300 dark:hover:bg-slate-800"
               }`
             }
           >
@@ -68,10 +60,10 @@ export default function AppLayout() {
           <NavLink
             to="/campaigns/new"
             className={({ isActive }) =>
-              `flex items-center gap-3 px-3 py-2 rounded-lg ${
+              `flex shrink-0 items-center gap-3 rounded-lg px-3 py-2 ${
                 isActive
                   ? "bg-blue-600 text-white"
-                  : "hover:bg-gray-100"
+                  : "text-gray-700 hover:bg-gray-100 dark:text-slate-300 dark:hover:bg-slate-800"
               }`
             }
           >
@@ -83,13 +75,13 @@ export default function AppLayout() {
 
     
 
-        <div className="mt-auto">
+        <div className="mt-4 lg:mt-auto">
           <ThemeSwitcher />
         </div>
 
       </aside>
 
-      <main className="h-screen flex-1 overflow-y-auto overflow-x-hidden p-6">
+      <main className="flex-1 overflow-visible p-3 sm:p-4 lg:h-screen lg:min-h-0 lg:overflow-y-auto lg:overflow-x-hidden lg:p-6">
         <Outlet />
       </main>
 

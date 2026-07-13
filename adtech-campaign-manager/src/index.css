@@ -1,8 +1,10 @@
 @import "tailwindcss";
 
+@custom-variant dark (&:where(.dark, .dark *));
+
 body {
   margin: 0;
-  overflow: hidden;
+  overflow: auto;
 }
 
 html,
@@ -11,3 +13,26 @@ body,
   height: 100%;
 }
 
+.campaign-list-scrollbar {
+  scrollbar-color: lightslategray transparent;
+  scrollbar-width: thin;
+}
+
+.campaign-list-scrollbar::-webkit-scrollbar {
+  width: 10px;
+}
+
+.campaign-list-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.campaign-list-scrollbar::-webkit-scrollbar-thumb {
+  background-color: lightslategray;
+  border: 3px solid transparent;
+  border-radius: 999px;
+  background-clip: content-box;
+}
+
+.campaign-list-scrollbar::-webkit-scrollbar-thumb:hover {
+  background-color: slategray;
+}
