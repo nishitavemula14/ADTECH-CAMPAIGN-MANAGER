@@ -4,10 +4,11 @@ import {
   ListChecks,
   LogOut,
   PlusCircle,
+  Users,
 } from "lucide-react";
 import toast from "react-hot-toast";
 
-import { useAuth } from "../../auth/auth.jsx";
+import { useAuth } from "../../auth/useAuth.js";
 import ThemeSwitcher from "../molecules/themeSwitcher.jsx";
 
 export default function AppLayout() {
@@ -163,6 +164,22 @@ export default function AppLayout() {
             <PlusCircle size={18} />
             Create Campaign
           </NavLink>
+
+          {["admin", "superadmin"].includes(currentUser?.role) && (
+            <NavLink
+              to="/admin"
+              className={({ isActive }) =>
+                `flex shrink-0 items-center gap-2 rounded-lg px-3 py-2 text-sm sm:gap-3 sm:text-base ${
+                  isActive
+                    ? "bg-blue-600 text-white"
+                    : "text-gray-700 hover:bg-gray-100 dark:text-slate-300 dark:hover:bg-slate-800"
+                }`
+              }
+            >
+              <Users size={18} />
+              {currentUser?.role === "superadmin" ? "Super Admin" : "Admin"}
+            </NavLink>
+          )}
 
         </nav>
 

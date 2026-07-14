@@ -1,5 +1,5 @@
 import { CampaignContext } from "../hooks/useCampaigns.js";
-import { useAuth } from "../auth/auth.jsx";
+import { useAuth } from "../auth/useAuth.js";
 import { useLocalStorage } from "../hooks/useLocalStorage.js";
 import { seedCampaigns } from "../data/seed.js";
 

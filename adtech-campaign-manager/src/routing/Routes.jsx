@@ -1,5 +1,6 @@
 import {Navigate , Route, Routes } from "react-router-dom";
 import AppLayout from "../Components/templates/appLayout.jsx";
+import AdminDashboard from "../Components/pages/admin-Dashboard.jsx";
 import CampaignDetail from "../Components/pages/campaign-Details.jsx";
 import CampaignList from "../Components/pages/campaign-List.jsx";
 import CreateCampaign from "../Components/pages/create-Campaign.jsx";
@@ -22,6 +23,9 @@ export default function AppRoutes() {
               <Route path="campaigns/new" element={<CreateCampaign />} />
               <Route path="campaigns/:campaignId/edit" element={<EditCampaign />} />
               <Route path="campaigns/:campaignId" element={<CampaignDetail />} />
+              <Route element={<ProtectedRoute allowedRoles={["admin", "superadmin"]} />}>
+                <Route path="admin" element={<AdminDashboard />} />
+              </Route>
             </Route>
           </Route>
 

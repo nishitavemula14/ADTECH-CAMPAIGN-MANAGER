@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 export function useLocalStorage(key, initialValue) {
   const [value, setValue] = useState(() => {
@@ -14,7 +14,7 @@ export function useLocalStorage(key, initialValue) {
     localStorage.setItem(key, JSON.stringify(value));
   }, [key, value]);
 
-  function setStoredValue(nextValue) {
+  const setStoredValue = useCallback((nextValue) => {
     setValue((previousValue) => {
       const resolvedValue =
         typeof nextValue === "function" ? nextValue(previousValue) : nextValue;
@@ -22,7 +22,7 @@ export function useLocalStorage(key, initialValue) {
       localStorage.setItem(key, JSON.stringify(resolvedValue));
       return resolvedValue;
     });
-  }
+  }, [key]);
 
   return [value, setStoredValue];
 }

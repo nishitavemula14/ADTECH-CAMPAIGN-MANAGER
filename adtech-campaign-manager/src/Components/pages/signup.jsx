@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Link, Navigate, useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
-import { useAuth } from "../../auth/auth.jsx";
+import { useAuth } from "../../auth/useAuth.js";
 
 export default function Signup() {
   const { isAuthenticated, signup } = useAuth();
@@ -60,12 +60,13 @@ export default function Signup() {
 
         <div>
           <label className="mb-2 block font-medium text-gray-900 dark:text-slate-100">
-            Username
+            Username or email
           </label>
           <input
             type="text"
             value={username}
             onChange={(e) => setUsername(e.target.value)}
+            placeholder="Choose a username"
             className="w-full rounded-md border border-gray-300 bg-white p-3 text-gray-900 focus:border-blue-500 focus:outline-none dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100"
             autoComplete="username"
           />

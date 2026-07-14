@@ -1,5 +1,6 @@
 import { Link, Navigate, useParams } from "react-router-dom";
 import { ArrowLeft, Edit } from "lucide-react";
+import { useAuth } from "../../auth/useAuth.js";
 import { useCampaigns } from "../../hooks/useCampaigns.js";
 
 const STATUS_STYLES = {
@@ -19,6 +20,7 @@ function formatStatus(status) {
 
 export default function CampaignDetail() {
   const { campaignId } = useParams();
+  const { currentUser } = useAuth();
   const { getCampaign, toggleStatus } = useCampaigns();
   const campaign = getCampaign(campaignId);
 
@@ -27,6 +29,8 @@ export default function CampaignDetail() {
   }
 
   const status = String(campaign.status).toLowerCase();
+  const canManageCampaign =
+    currentUser?.role === "superadmin" || campaign.ownerId === currentUser?.id;
 
   return (
     <div className="mx-auto max-w-4xl p-3 sm:p-4 md:p-6">
@@ -45,21 +49,25 @@ export default function CampaignDetail() {
             Back
           </Link>
 
-          <Link
-            to={`/campaigns/${campaign.id}/edit`}
-            className="flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-white transition hover:bg-blue-700"
-          >
-            <Edit size={18} />
-            Edit
-          </Link>
+          {canManageCampaign && (
+            <>
+              <Link
+                to={`/campaigns/${campaign.id}/edit`}
+                className="flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-white transition hover:bg-blue-700"
+              >
+                <Edit size={18} />
+                Edit
+              </Link>
 
-          <button
-            type="button"
-            onClick={() => toggleStatus(campaign.id)}
-            className="rounded-lg bg-gray-900 px-4 py-2 font-semibold text-white transition hover:bg-gray-800 dark:bg-slate-100 dark:text-slate-950 dark:hover:bg-white"
-          >
-            {status === "active" ? "Pause" : "Resume"}
-          </button>
+              <button
+                type="button"
+                onClick={() => toggleStatus(campaign.id)}
+                className="rounded-lg bg-gray-900 px-4 py-2 font-semibold text-white transition hover:bg-gray-800 dark:bg-slate-100 dark:text-slate-950 dark:hover:bg-white"
+              >
+                {status === "active" ? "Pause" : "Resume"}
+              </button>
+            </>
+          )}
         </div>
       </div>
 
@@ -68,7 +76,7 @@ export default function CampaignDetail() {
           <div>
             <p className="text-sm font-semibold text-gray-500 dark:text-slate-400">Campaign ID</p>
             <p className="mt-1 text-lg font-bold text-gray-900 dark:text-slate-100">
-              {campaign.id}
+              {campaign.displayId || campaign.id}
             </p>
           </div>
 

@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import { Edit, Trash2 } from "lucide-react";
 import toast from "react-hot-toast";
+import { useAuth } from "../../auth/useAuth.js";
 import { useCampaigns } from "../../hooks/useCampaigns.js";
 import EmptyState from "../atoms/empty.jsx";
 
@@ -30,12 +31,20 @@ function formatCurrency(value) {
 }
 
 export default function CampaignList() {
+  const { currentUser } = useAuth();
   const { campaigns, deleteCampaign, deleteAllCampaigns, updateCampaign } =
     useCampaigns();
   const [search, setSearch] = useState("");
   const [platformFilter, setPlatformFilter] = useState("all");
   const [statusFilter, setStatusFilter] = useState("all");
   const [campaignToDelete, setCampaignToDelete] = useState(null);
+  const isAdmin = currentUser?.role === "admin";
+  const isSuperAdmin = currentUser?.role === "superadmin";
+  const canBulkDelete = !isAdmin;
+
+  function canManageCampaign(campaign) {
+    return isSuperAdmin || campaign.ownerId === currentUser?.id;
+  }
 
   function confirmDeleteCampaign(campaign) {
     setCampaignToDelete(campaign);
@@ -112,7 +121,9 @@ export default function CampaignList() {
     const searchTerm = search.toLowerCase().trim();
     const matchesSearch =
       campaign.name.toLowerCase().includes(searchTerm) ||
-      String(campaign.id).toLowerCase().includes(searchTerm);
+      String(campaign.displayId || campaign.id)
+        .toLowerCase()
+        .includes(searchTerm);
     const matchesPlatform =
       platformFilter === "all" || campaign.platform === platformFilter;
     const matchesStatus =
@@ -142,7 +153,7 @@ export default function CampaignList() {
             type="button"
             onClick={confirmDeleteAllCampaigns}
             className="w-full rounded-lg bg-red-600 px-5 py-2 text-center font-semibold text-white transition hover:bg-red-700 disabled:cursor-not-allowed disabled:bg-red-300 sm:w-auto"
-            disabled={campaigns.length === 0}
+            disabled={campaigns.length === 0 || !canBulkDelete}
           >
             Delete All
           </button>
@@ -228,7 +239,7 @@ export default function CampaignList() {
                     className="border-t border-gray-100 hover:bg-gray-50 dark:border-slate-800 dark:hover:bg-slate-800/70"
                   >
                     <td className="p-4 font-semibold text-gray-500 dark:text-slate-400">
-                      {campaign.id}
+                      {campaign.displayId || campaign.id}
                     </td>
 
                     <td className="max-w-72 p-4 align-top font-medium">
@@ -247,43 +258,61 @@ export default function CampaignList() {
                     </td>
 
                     <td className="p-4 text-center">
-                      <select
-                        value={status}
-                        onChange={(e) =>
-                          updateCampaign(campaign.id, {
-                            status: e.target.value,
-                          })
-                        }
-                        className={`rounded-full border px-3 py-1 text-sm font-semibold capitalize outline-none ${
-                          STATUS_STYLES[status] || STATUS_STYLES.active
-                        }`}
-                      >
-                        <option value="active">Active</option>
-                        <option value="paused">Paused</option>
-                        <option value="completed">Completed</option>
-                      </select>
+                      {canManageCampaign(campaign) ? (
+                        <select
+                          value={status}
+                          onChange={(e) =>
+                            updateCampaign(campaign.id, {
+                              status: e.target.value,
+                            })
+                          }
+                          className={`rounded-full border px-3 py-1 text-sm font-semibold capitalize outline-none ${
+                            STATUS_STYLES[status] || STATUS_STYLES.active
+                          }`}
+                        >
+                          <option value="active">Active</option>
+                          <option value="paused">Paused</option>
+                          <option value="completed">Completed</option>
+                        </select>
+                      ) : (
+                        <span
+                          className={`inline-flex rounded-full border px-3 py-1 text-sm font-semibold capitalize ${
+                            STATUS_STYLES[status] || STATUS_STYLES.active
+                          }`}
+                        >
+                          {status}
+                        </span>
+                      )}
                     </td>
 
                     <td className="p-4">
                       <div className="flex justify-center gap-2">
-                        <Link
-                          to={`/campaigns/${campaign.id}/edit`}
-                          className="rounded-lg p-2 text-green-600 transition hover:bg-green-50"
-                          title="Edit campaign"
-                          aria-label="Edit campaign"
-                        >
-                          <Edit size={18} />
-                        </Link>
+                        {canManageCampaign(campaign) ? (
+                          <>
+                            <Link
+                              to={`/campaigns/${campaign.id}/edit`}
+                              className="rounded-lg p-2 text-green-600 transition hover:bg-green-50"
+                              title="Edit campaign"
+                              aria-label="Edit campaign"
+                            >
+                              <Edit size={18} />
+                            </Link>
 
-                        <button
-                          type="button"
-                          onClick={() => confirmDeleteCampaign(campaign)}
-                          className="rounded-lg p-2 text-red-600 transition hover:bg-red-50"
-                          title="Delete campaign"
-                          aria-label="Delete campaign"
-                        >
-                          <Trash2 size={18} />
-                        </button>
+                            <button
+                              type="button"
+                              onClick={() => confirmDeleteCampaign(campaign)}
+                              className="rounded-lg p-2 text-red-600 transition hover:bg-red-50"
+                              title="Delete campaign"
+                              aria-label="Delete campaign"
+                            >
+                              <Trash2 size={18} />
+                            </button>
+                          </>
+                        ) : (
+                          <span className="text-sm font-semibold text-gray-400">
+                            Read only
+                          </span>
+                        )}
                       </div>
                     </td>
                   </tr>

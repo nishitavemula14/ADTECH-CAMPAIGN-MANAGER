@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Link, Navigate, useNavigate, useParams } from "react-router-dom";
 import { ArrowLeft } from "lucide-react";
 import toast from "react-hot-toast";
+import { useAuth } from "../../auth/useAuth.js";
 import { useCampaigns } from "../../hooks/useCampaigns.js";
 import {
   CAMPAIGN_NAME_CHARACTER_LIMIT,
@@ -18,6 +19,7 @@ export default function EditCampaign() {
   const { campaignId } = useParams();
   const navigate = useNavigate();
 
+  const { currentUser } = useAuth();
   const { campaigns, updateCampaign } = useCampaigns();
 
   const campaign = campaigns.find(
@@ -47,6 +49,13 @@ export default function EditCampaign() {
 
   if (!campaign) {
     return <Navigate to="/campaigns" replace />;
+  }
+
+  const canManageCampaign =
+    currentUser?.role === "superadmin" || campaign.ownerId === currentUser?.id;
+
+  if (!canManageCampaign) {
+    return <Navigate to={`/campaigns/${campaignId}`} replace />;
   }
 
   function handleSubmit(e) {

@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { ArrowLeft } from "lucide-react";
 import toast from "react-hot-toast";
+import { useAuth } from "../../auth/useAuth.js";
 import { useCampaigns } from "../../hooks/useCampaigns.js";
 import {
   CAMPAIGN_NAME_CHARACTER_LIMIT,
@@ -16,12 +17,16 @@ import {
 
 export default function CreateCampaign() {
   const navigate = useNavigate();
+  const { currentUser, users } = useAuth();
   const { campaigns, addCampaign } = useCampaigns();
 
   const [campaignName, setCampaignName] = useState("");
   const [platform, setPlatform] = useState("");
   const [budget, setBudget] = useState("");
   const [ageGroup, setAgeGroup] = useState("");
+  const [assignedUserId, setAssignedUserId] = useState("");
+  const canAssignOwner = ["admin", "superadmin"].includes(currentUser?.role);
+  const assignableUsers = users.filter((user) => user.role !== "superadmin");
   const campaignNameCharacterCount = getCampaignNameCharacterCount(campaignName);
   const normalizedCampaignName = campaignName.trim().toLowerCase();
   const isDuplicateName =
@@ -38,6 +43,7 @@ export default function CreateCampaign() {
       campaignName.trim() === "" ||
       platform === "" ||
       ageGroup === "" ||
+      (canAssignOwner && assignedUserId === "") ||
       Number(budget) <= 0
     ) {
       toast.error("Please fill all the fields");
@@ -64,13 +70,14 @@ export default function CreateCampaign() {
       platform,
       budget,
       ageGroup,
+      ownerId: canAssignOwner ? assignedUserId : undefined,
     };
 
     addCampaign(newCampaign);
 
     toast.success("Campaign Created Successfully!");
 
-    navigate("/campaigns");
+    navigate(canAssignOwner ? "/admin" : "/campaigns");
   }
 
   return (
@@ -99,6 +106,27 @@ export default function CreateCampaign() {
         onSubmit={handleSubmit}
         className="space-y-5 rounded-lg bg-white p-4 shadow-md dark:bg-slate-900 sm:p-6"
       >
+        {canAssignOwner && (
+          <div>
+            <label className="mb-2 block font-medium text-gray-900 dark:text-slate-100">
+              Assign To User
+            </label>
+
+            <select
+              value={assignedUserId}
+              onChange={(e) => setAssignedUserId(e.target.value)}
+              className="w-full rounded-md border border-gray-300 bg-white p-3 text-gray-900 focus:border-blue-500 focus:outline-none dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100"
+            >
+              <option value="">Select User</option>
+              {assignableUsers.map((user) => (
+                <option key={user.id} value={user.id}>
+                  {user.username} ({user.role})
+                </option>
+              ))}
+            </select>
+          </div>
+        )}
+
         <div>
           <label className="mb-2 block font-medium text-gray-900 dark:text-slate-100">
             Campaign Name
