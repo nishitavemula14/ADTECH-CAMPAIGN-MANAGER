@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import { Edit, Trash2 } from "lucide-react";
 import toast from "react-hot-toast";
-import { useCampaigns } from "../../hooks/useCampaigns";
+import { useCampaigns } from "../../hooks/useCampaigns.js";
 import EmptyState from "../atoms/empty.jsx";
 
 const STATUS_STYLES = {
@@ -19,6 +19,7 @@ const DEFAULT_PLATFORM_OPTIONS = [
 ];
 
 const STATUS_FILTER_OPTIONS = [
+  { label: "All", value: "all" },
   { label: "Active", value: "active" },
   { label: "Paused", value: "paused" },
   { label: "Completed", value: "completed" },
@@ -33,7 +34,7 @@ export default function CampaignList() {
     useCampaigns();
   const [search, setSearch] = useState("");
   const [platformFilter, setPlatformFilter] = useState("all");
-  const [statusFilter, setStatusFilter] = useState("active");
+  const [statusFilter, setStatusFilter] = useState("all");
   const [campaignToDelete, setCampaignToDelete] = useState(null);
 
   function confirmDeleteCampaign(campaign) {
@@ -115,6 +116,7 @@ export default function CampaignList() {
     const matchesPlatform =
       platformFilter === "all" || campaign.platform === platformFilter;
     const matchesStatus =
+      statusFilter === "all" ||
       String(campaign.status).toLowerCase() === statusFilter;
 
     return matchesSearch && matchesPlatform && matchesStatus;
@@ -171,7 +173,7 @@ export default function CampaignList() {
         </select>
       </div>
 
-      <div className="mb-6 grid shrink-0 grid-cols-3 gap-2 rounded-lg bg-gray-200 p-1 dark:bg-slate-800 sm:inline-grid sm:w-fit">
+      <div className="mb-6 grid w-full shrink-0 grid-cols-2 gap-2 rounded-lg bg-gray-200 p-1 dark:bg-slate-800 sm:grid-cols-4 lg:w-fit">
         {STATUS_FILTER_OPTIONS.map((status) => {
           const isActive = statusFilter === status.value;
 
@@ -195,7 +197,11 @@ export default function CampaignList() {
       {filteredCampaigns.length === 0 ? (
         <EmptyState
           title="No Campaigns Found"
-          message={`No ${statusFilter} campaigns found.`}
+          message={
+            statusFilter === "all"
+              ? "Create your first campaign."
+              : `No ${statusFilter} campaigns found.`
+          }
         />
       ) : (
         <div className="campaign-list-scrollbar flex-1 overflow-x-auto rounded-xl bg-white shadow dark:bg-slate-900 lg:min-h-0 lg:overflow-y-scroll lg:[scrollbar-gutter:stable]">

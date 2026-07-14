@@ -6,6 +6,7 @@ export const seedCampaigns = [
     ageGroup: "25-34",
     budget: 12500,
     status: "active",
+    ownerId: "user-1",
     createdAt: "2026-07-01T09:00:00.000Z",
   },
 
@@ -16,6 +17,7 @@ export const seedCampaigns = [
     ageGroup: "18-24",
     budget: 8600,
     status: "active",
+    ownerId: "user-1",
     createdAt: "2026-07-02T10:30:00.000Z",
   },
 
@@ -26,6 +28,7 @@ export const seedCampaigns = [
     ageGroup: "35+",
     budget: 5400,
     status: "paused",
+    ownerId: "user-2",
     createdAt: "2026-07-03T15:15:00.000Z",
   },
 ];

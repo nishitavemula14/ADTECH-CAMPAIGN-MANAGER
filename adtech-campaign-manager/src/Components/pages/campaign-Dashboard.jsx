@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import { PlusCircle } from "lucide-react";
 
-import { useCampaigns } from "../../hooks/useCampaigns";
+import { useCampaigns } from "../../hooks/useCampaigns.js";
 
 import EmptyState from "../atoms/empty.jsx";
 import BarChart from "../organisms/barChart.jsx";

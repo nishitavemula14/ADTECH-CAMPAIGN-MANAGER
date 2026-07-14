@@ -4,7 +4,7 @@ export function useLocalStorage(key, initialValue) {
   const [value, setValue] = useState(() => {
     try {
       const storedValue = localStorage.getItem(key);
-      return storedValue ? JSON.parse(storedValue) : initialValue;
+      return storedValue === null ? initialValue : JSON.parse(storedValue);
     } catch {
       return initialValue;
     }
@@ -14,5 +14,15 @@ export function useLocalStorage(key, initialValue) {
     localStorage.setItem(key, JSON.stringify(value));
   }, [key, value]);
 
-  return [value, setValue];
+  function setStoredValue(nextValue) {
+    setValue((previousValue) => {
+      const resolvedValue =
+        typeof nextValue === "function" ? nextValue(previousValue) : nextValue;
+
+      localStorage.setItem(key, JSON.stringify(resolvedValue));
+      return resolvedValue;
+    });
+  }
+
+  return [value, setStoredValue];
 }

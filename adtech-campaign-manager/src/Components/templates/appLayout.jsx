@@ -2,37 +2,130 @@ import { NavLink, Outlet } from "react-router-dom";
 import {
   BarChart3,
   ListChecks,
+  LogOut,
   PlusCircle,
 } from "lucide-react";
+import toast from "react-hot-toast";
 
+import { useAuth } from "../../auth/auth.jsx";
 import ThemeSwitcher from "../molecules/themeSwitcher.jsx";
 
 export default function AppLayout() {
+  const { currentUser, logout } = useAuth();
+
+  function showCenteredToast(message, options = {}) {
+    return toast(message, {
+      ...options,
+      position: "top-center",
+      style: {
+        left: "50%",
+        margin: 0,
+        position: "fixed",
+        top: "50%",
+        transform: "translate(-50%, -50%)",
+        ...(options.style || {}),
+      },
+    });
+  }
+
+  function confirmLogout() {
+    toast.custom(
+      (toastItem) => (
+        <div
+          className="pointer-events-auto w-80 max-w-[calc(100vw-2rem)] rounded-lg bg-white p-4 shadow-xl dark:bg-slate-900"
+          onClick={(e) => e.stopPropagation()}
+        >
+          <p className="font-bold text-gray-900 dark:text-slate-100">
+            Do you want to logout?
+          </p>
+
+          <div className="mt-4 flex justify-end gap-2">
+            <button
+              type="button"
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                toast.dismiss(toastItem.id);
+              }}
+              className="rounded-lg border border-gray-300 px-3 py-2 text-sm font-semibold text-gray-700 transition hover:bg-gray-100 dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-800"
+            >
+              No
+            </button>
+
+            <button
+              type="button"
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                toast.dismiss(toastItem.id);
+                logout();
+                showCenteredToast("Logged out successfully", {
+                  duration: 1800,
+                });
+              }}
+              className="rounded-lg bg-red-600 px-3 py-2 text-sm font-semibold text-white transition hover:bg-red-700"
+            >
+              Yes
+            </button>
+          </div>
+        </div>
+      ),
+      {
+        duration: Infinity,
+        position: "top-center",
+        style: {
+          left: "50%",
+          margin: 0,
+          position: "fixed",
+          top: "50%",
+          transform: "translate(-50%, -50%)",
+        },
+      }
+    );
+  }
+
   return (
     <div className="flex min-h-screen flex-col overflow-visible bg-gray-100 text-gray-950 transition-colors dark:bg-slate-950 dark:text-slate-100 lg:h-screen lg:flex-row lg:overflow-hidden">
-      <aside className="sticky top-0 z-40 flex shrink-0 flex-col border-b border-gray-200 bg-white p-4 shadow-sm transition-colors dark:border-slate-800 dark:bg-slate-900 lg:static lg:h-screen lg:w-64 lg:border-b-0 lg:border-r lg:p-5">
-        <div className="mb-4 flex items-center gap-3 lg:mb-8">
-          <div className="flex h-11 w-11 items-center justify-center rounded-lg bg-blue-600 font-bold text-white lg:h-12 lg:w-12">
+      <aside className="sticky top-0 z-40 flex shrink-0 flex-col border-b border-gray-200 bg-white p-3 shadow-sm transition-colors dark:border-slate-800 dark:bg-slate-900 sm:p-4 lg:static lg:h-screen lg:w-64 lg:border-b-0 lg:border-r lg:p-5">
+        <div className="flex items-center gap-3 pb-3 sm:pb-4 lg:pb-5">
+          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-blue-600 text-sm font-bold text-white lg:h-12 lg:w-12 lg:text-base">
             ACM
           </div>
 
           <div>
-            <h2 className="text-lg font-bold">
+            <h2 className="text-base font-bold sm:text-lg">
               AdTech
             </h2>
 
-            <p className="text-sm text-gray-500 dark:text-slate-400">
+            <p className="text-xs text-gray-500 dark:text-slate-400 sm:text-sm">
               Campaign Manager
             </p>
           </div>
 
         </div>
-        <nav className="flex gap-2 overflow-x-auto pb-1 lg:flex-col lg:overflow-visible lg:pb-0">
+
+        <div className="border-t border-gray-200 dark:border-slate-800" />
+
+        <nav className="flex gap-2 overflow-x-auto py-3 lg:flex-1 lg:flex-col lg:overflow-visible lg:py-4">
+          <div className="flex min-w-48 shrink-0 items-center gap-3 rounded-lg bg-gray-50 p-2 dark:bg-slate-800/70 sm:p-3 lg:min-w-0">
+            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-blue-100 text-sm font-bold uppercase text-blue-700 dark:bg-blue-950 dark:text-blue-200">
+              {currentUser?.username?.charAt(0)}
+            </div>
+
+            <div className="min-w-0">
+              <p className="truncate text-sm font-bold text-gray-900 dark:text-slate-100">
+                {currentUser?.username}
+              </p>
+              <p className="hidden text-xs capitalize text-gray-500 dark:text-slate-400 sm:block">
+                {currentUser?.role}
+              </p>
+            </div>
+          </div>
 
           <NavLink
             to="/"
             className={({ isActive }) =>
-              `flex shrink-0 items-center gap-3 rounded-lg px-3 py-2 ${
+              `flex shrink-0 items-center gap-2 rounded-lg px-3 py-2 text-sm sm:gap-3 sm:text-base ${
                 isActive
                   ? "bg-blue-600 text-white"
                   : "text-gray-700 hover:bg-gray-100 dark:text-slate-300 dark:hover:bg-slate-800"
@@ -46,7 +139,7 @@ export default function AppLayout() {
           <NavLink
             to="/campaigns"
             className={({ isActive }) =>
-              `flex shrink-0 items-center gap-3 rounded-lg px-3 py-2 ${
+              `flex shrink-0 items-center gap-2 rounded-lg px-3 py-2 text-sm sm:gap-3 sm:text-base ${
                 isActive
                   ? "bg-blue-600 text-white"
                   : "text-gray-700 hover:bg-gray-100 dark:text-slate-300 dark:hover:bg-slate-800"
@@ -60,7 +153,7 @@ export default function AppLayout() {
           <NavLink
             to="/campaigns/new"
             className={({ isActive }) =>
-              `flex shrink-0 items-center gap-3 rounded-lg px-3 py-2 ${
+              `flex shrink-0 items-center gap-2 rounded-lg px-3 py-2 text-sm sm:gap-3 sm:text-base ${
                 isActive
                   ? "bg-blue-600 text-white"
                   : "text-gray-700 hover:bg-gray-100 dark:text-slate-300 dark:hover:bg-slate-800"
@@ -73,10 +166,21 @@ export default function AppLayout() {
 
         </nav>
 
-    
+        <div className="border-t border-gray-200 dark:border-slate-800" />
 
-        <div className="mt-4 lg:mt-auto">
-          <ThemeSwitcher />
+        <div className="pt-3 lg:pt-4">
+          <div className="grid grid-cols-2 gap-1 lg:mt-3 lg:grid-cols-1">
+            <ThemeSwitcher />
+
+            <button
+              type="button"
+              onClick={confirmLogout}
+              className="flex w-full items-center justify-start gap-2 rounded-md px-3 py-2 text-sm font-semibold text-red-600 transition hover:bg-red-50 dark:text-red-300 dark:hover:bg-red-950/30"
+            >
+              <LogOut size={16} />
+              Logout
+            </button>
+          </div>
         </div>
 
       </aside>

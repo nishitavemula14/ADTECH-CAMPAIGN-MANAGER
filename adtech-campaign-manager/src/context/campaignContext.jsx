@@ -1,25 +1,17 @@
-import { useEffect, useState } from "react";
 import { CampaignContext } from "../hooks/useCampaigns.js";
+import { useAuth } from "../auth/auth.jsx";
+import { useLocalStorage } from "../hooks/useLocalStorage.js";
 import { seedCampaigns } from "../data/seed.js";
 
-const STORAGE_KEY = "adtech_campaigns";
+const STORAGE_KEY = "campaigns";
 
 export function CampaignProvider({ children }) {
-  
-  const [campaigns, setCampaigns] = useState(() => {
-    const savedCampaigns = localStorage.getItem(STORAGE_KEY);
-
-    if (savedCampaigns) {
-      return JSON.parse(savedCampaigns);
-    }
-
-    return seedCampaigns;
-  });
-
-  
-  useEffect(() => {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(campaigns));
-  }, [campaigns]);
+  const { currentUser } = useAuth();
+  const currentUserId = currentUser?.id;
+  const [campaigns, setCampaigns] = useLocalStorage(
+    STORAGE_KEY,
+    seedCampaigns
+  );
 
 
   const addCampaign = (newCampaign) => {
@@ -52,7 +44,9 @@ export function CampaignProvider({ children }) {
   };
 
   const deleteAllCampaigns = () => {
-    setCampaigns([]);
+    setCampaigns((prevCampaigns) =>
+      prevCampaigns.filter((campaign) => campaign.ownerId !== currentUserId)
+    );
   };
 
   

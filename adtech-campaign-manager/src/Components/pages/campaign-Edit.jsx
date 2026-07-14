@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link, useNavigate, useParams } from "react-router-dom";
+import { Link, Navigate, useNavigate, useParams } from "react-router-dom";
 import { ArrowLeft } from "lucide-react";
 import toast from "react-hot-toast";
 import { useCampaigns } from "../../hooks/useCampaigns.js";
@@ -46,20 +46,7 @@ export default function EditCampaign() {
     );
 
   if (!campaign) {
-    return (
-      <div className="p-6 text-center">
-        <h1 className="text-2xl font-bold">
-          Campaign Not Found
-        </h1>
-
-        <Link
-          to="/campaigns"
-          className="mt-4 inline-block text-blue-600 hover:underline"
-        >
-          Back to Campaigns
-        </Link>
-      </div>
-    );
+    return <Navigate to="/campaigns" replace />;
   }
 
   function handleSubmit(e) {

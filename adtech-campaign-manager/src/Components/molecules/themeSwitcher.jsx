@@ -49,10 +49,10 @@ export default function ThemeSwitcher() {
       aria-label={isDark ? "Switch to light theme" : "Switch to dark theme"}
       aria-pressed={isDark}
       onClick={toggleTheme}
-      className="inline-flex items-center gap-2 rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm font-semibold text-gray-700 shadow transition hover:bg-gray-100 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800"
+      className="flex w-full items-center justify-start gap-2 rounded-md px-3 py-2 text-sm font-semibold text-gray-700 transition hover:bg-gray-100 dark:text-slate-200 dark:hover:bg-slate-800"
     >
       {isDark ? <Sun size={18} /> : <Moon size={18} />}
-      {isDark ? "Light" : "Dark"}
+      {isDark ? "Light Mode" : "Dark Mode"}
     </button>
   );
 }
