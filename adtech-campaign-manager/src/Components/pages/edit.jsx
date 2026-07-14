@@ -30,6 +30,12 @@ export default function EditCampaign() {
   const [budget, setBudget] = useState(campaign?.budget || "");
   const [status, setStatus] = useState(campaign?.status || "active");
   const campaignNameCharacterCount = getCampaignNameCharacterCount(campaignName);
+  const hasChanges =
+    campaignName.trim() !== String(campaign?.name || "").trim() ||
+    platform !== (campaign?.platform || "") ||
+    ageGroup !== (campaign?.ageGroup || "") ||
+    String(budget) !== String(campaign?.budget || "") ||
+    status !== (campaign?.status || "active");
   const normalizedCampaignName = campaignName.trim().toLowerCase();
   const isDuplicateName =
     normalizedCampaignName !== "" &&
@@ -84,6 +90,11 @@ export default function EditCampaign() {
       return;
     }
 
+    if (!hasChanges) {
+      navigate("/campaigns");
+      return;
+    }
+
     updateCampaign(campaignId, {
       name: campaignName.trim(),
       platform: platform,
@@ -94,7 +105,7 @@ export default function EditCampaign() {
 
     toast.success("Campaign Updated Successfully!");
 
-    navigate(`/campaigns/${campaignId}`);
+    navigate("/campaigns");
   }
 
   return (
@@ -196,7 +207,7 @@ export default function EditCampaign() {
 
         <div>
           <label className="mb-2 block font-medium text-gray-900 dark:text-slate-100">
-            Budget
+            Budget (₹)
           </label>
 
           <input
@@ -213,7 +224,8 @@ export default function EditCampaign() {
           />
 
           <p className="mt-2 text-sm text-gray-500 dark:text-slate-400">
-            Maximum budget: {MAX_CAMPAIGN_BUDGET_LABEL}
+             Maximum Limit:{" "}
+            {MAX_CAMPAIGN_BUDGET_LABEL}
           </p>
         </div>
 
@@ -231,15 +243,25 @@ export default function EditCampaign() {
           >
             <option value="active">Active</option>
             <option value="paused">Paused</option>
+            <option value="completed">Completed</option>
           </select>
         </div>
 
-        <button
-          type="submit"
-          className="w-full rounded-lg bg-blue-600 py-3 text-white hover:bg-blue-700"
-        >
-          Update Campaign
-        </button>
+        <div className="flex flex-col gap-3 sm:flex-row">
+          <Link
+            to="/campaigns"
+            className="flex w-full items-center justify-center rounded-lg border border-gray-300 py-3 text-gray-700 transition hover:bg-gray-100 dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-800 sm:w-1/2"
+          >
+            Cancel
+          </Link>
+
+          <button
+            type="submit"
+            className="w-full rounded-lg bg-blue-600 py-3 text-white hover:bg-blue-700 sm:w-1/2"
+          >
+            Update Campaign
+          </button>
+        </div>
       </form>
     </div>
   );

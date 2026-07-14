@@ -16,6 +16,7 @@ export default function Dashboard() {
   const statusOptions = [
     { label: "Active", value: "active" },
     { label: "Paused", value: "paused" },
+    { label: "Completed", value: "completed" },
   ];
   const budgetGroups = [
     { label: "Platform", value: "platform" },

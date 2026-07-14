@@ -10,7 +10,7 @@ import ThemeSwitcher from "../molecules/themeSwitcher.jsx";
 export default function AppLayout() {
   return (
     <div className="flex min-h-screen flex-col overflow-visible bg-gray-100 text-gray-950 transition-colors dark:bg-slate-950 dark:text-slate-100 lg:h-screen lg:flex-row lg:overflow-hidden">
-      <aside className="flex shrink-0 flex-col border-b border-gray-200 bg-white p-4 shadow-sm transition-colors dark:border-slate-800 dark:bg-slate-900 lg:h-screen lg:w-64 lg:border-b-0 lg:border-r lg:p-5">
+      <aside className="sticky top-0 z-40 flex shrink-0 flex-col border-b border-gray-200 bg-white p-4 shadow-sm transition-colors dark:border-slate-800 dark:bg-slate-900 lg:static lg:h-screen lg:w-64 lg:border-b-0 lg:border-r lg:p-5">
         <div className="mb-4 flex items-center gap-3 lg:mb-8">
           <div className="flex h-11 w-11 items-center justify-center rounded-lg bg-blue-600 font-bold text-white lg:h-12 lg:w-12">
             ACM

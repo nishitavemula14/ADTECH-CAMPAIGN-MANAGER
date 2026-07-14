@@ -51,6 +51,10 @@ export function CampaignProvider({ children }) {
     );
   }
 
+  function deleteAllCampaigns() {
+    setCampaigns([]);
+  }
+
   function toggleStatus(id) {
     setCampaigns((prevCampaigns) =>
       prevCampaigns.map((campaign) =>
@@ -78,6 +82,7 @@ export function CampaignProvider({ children }) {
         addCampaign,
         updateCampaign,
         deleteCampaign,
+        deleteAllCampaigns,
         toggleStatus,
         getCampaign,
       }}

@@ -8,24 +8,103 @@ import EmptyState from "../atoms/empty.jsx";
 const STATUS_STYLES = {
   active: "border-green-200 bg-green-100 text-green-700",
   paused: "border-yellow-200 bg-yellow-100 text-yellow-700",
+  completed: "border-blue-200 bg-blue-100 text-blue-700",
 };
+
+const DEFAULT_PLATFORM_OPTIONS = [
+  "Google Ads",
+  "Facebook",
+  "Instagram",
+  "LinkedIn",
+];
+
+const STATUS_FILTER_OPTIONS = [
+  { label: "Active", value: "active" },
+  { label: "Paused", value: "paused" },
+  { label: "Completed", value: "completed" },
+];
 
 function formatCurrency(value) {
   return `\u20B9${Number(value).toLocaleString()}`;
 }
 
 export default function CampaignList() {
-  const { campaigns, deleteCampaign, updateCampaign } = useCampaigns();
+  const { campaigns, deleteCampaign, deleteAllCampaigns, updateCampaign } =
+    useCampaigns();
   const [search, setSearch] = useState("");
   const [platformFilter, setPlatformFilter] = useState("all");
+  const [statusFilter, setStatusFilter] = useState("active");
   const [campaignToDelete, setCampaignToDelete] = useState(null);
 
   function confirmDeleteCampaign(campaign) {
     setCampaignToDelete(campaign);
   }
 
+  function confirmDeleteAllCampaigns() {
+    if (campaigns.length === 0) {
+      toast.error("No campaigns to delete");
+      return;
+    }
+
+    toast.custom(
+      (toastItem) => (
+        <div
+          className="pointer-events-auto w-80 max-w-[calc(100vw-2rem)] rounded-lg bg-white p-4 shadow-xl dark:bg-slate-900"
+          onClick={(e) => e.stopPropagation()}
+        >
+          <p className="font-bold text-gray-900 dark:text-slate-100">
+            Should I delete all the list?
+          </p>
+
+          <div className="mt-4 flex justify-end gap-2">
+            <button
+              type="button"
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                toast.dismiss(toastItem.id);
+              }}
+              className="rounded-lg border border-gray-300 px-3 py-2 text-sm font-semibold text-gray-700 transition hover:bg-gray-100 dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-800"
+            >
+              No
+            </button>
+
+            <button
+              type="button"
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                deleteAllCampaigns();
+                setCampaignToDelete(null);
+                toast.dismiss(toastItem.id);
+                toast.success("All campaigns deleted successfully");
+              }}
+              className="rounded-lg bg-red-600 px-3 py-2 text-sm font-semibold text-white transition hover:bg-red-700"
+            >
+              Yes
+            </button>
+          </div>
+        </div>
+      ),
+      {
+        duration: Infinity,
+        position: "top-center",
+        style: {
+          left: "50%",
+          margin: 0,
+          position: "fixed",
+          top: "50%",
+          transform: "translate(-50%, -50%)",
+        },
+      }
+    );
+  }
+
   const platformOptions = [
-    ...new Set(campaigns.map((campaign) => campaign.platform).filter(Boolean)),
+    ...new Set([
+      ...DEFAULT_PLATFORM_OPTIONS,
+      ...campaigns.map((campaign) => campaign.platform).filter(Boolean),
+    ]),
   ];
 
   const filteredCampaigns = campaigns.filter((campaign) => {
@@ -35,8 +114,10 @@ export default function CampaignList() {
       String(campaign.id).toLowerCase().includes(searchTerm);
     const matchesPlatform =
       platformFilter === "all" || campaign.platform === platformFilter;
+    const matchesStatus =
+      String(campaign.status).toLowerCase() === statusFilter;
 
-    return matchesSearch && matchesPlatform;
+    return matchesSearch && matchesPlatform && matchesStatus;
   });
 
   return (
@@ -47,12 +128,23 @@ export default function CampaignList() {
           <p className="text-gray-500 dark:text-slate-400">Manage all your campaigns</p>
         </div>
 
-        <Link
-          to="/campaigns/new"
-          className="w-full rounded-lg bg-blue-600 px-5 py-2 text-center text-white hover:bg-blue-700 sm:w-auto"
-        >
-          + Create Campaign
-        </Link>
+        <div className="flex w-full flex-col gap-3 sm:w-auto sm:flex-row">
+          <Link
+            to="/campaigns/new"
+            className="w-full rounded-lg bg-blue-600 px-5 py-2 text-center text-white hover:bg-blue-700 sm:w-auto"
+          >
+            + Create Campaign
+          </Link>
+
+          <button
+            type="button"
+            onClick={confirmDeleteAllCampaigns}
+            className="w-full rounded-lg bg-red-600 px-5 py-2 text-center font-semibold text-white transition hover:bg-red-700 disabled:cursor-not-allowed disabled:bg-red-300 sm:w-auto"
+            disabled={campaigns.length === 0}
+          >
+            Delete All
+          </button>
+        </div>
       </div>
 
       <div className="mb-6 flex shrink-0 flex-col gap-3 sm:flex-row">
@@ -79,10 +171,31 @@ export default function CampaignList() {
         </select>
       </div>
 
+      <div className="mb-6 grid shrink-0 grid-cols-3 gap-2 rounded-lg bg-gray-200 p-1 dark:bg-slate-800 sm:inline-grid sm:w-fit">
+        {STATUS_FILTER_OPTIONS.map((status) => {
+          const isActive = statusFilter === status.value;
+
+          return (
+            <button
+              key={status.value}
+              type="button"
+              onClick={() => setStatusFilter(status.value)}
+              className={`rounded-md px-3 py-2 text-sm font-semibold transition ${
+                isActive
+                  ? "bg-blue-600 text-white shadow"
+                  : "text-gray-700 hover:bg-white dark:text-slate-300 dark:hover:bg-slate-700"
+              }`}
+            >
+              {status.label}
+            </button>
+          );
+        })}
+      </div>
+
       {filteredCampaigns.length === 0 ? (
         <EmptyState
           title="No Campaigns Found"
-          message="Create your first campaign."
+          message={`No ${statusFilter} campaigns found.`}
         />
       ) : (
         <div className="campaign-list-scrollbar flex-1 overflow-x-auto rounded-xl bg-white shadow dark:bg-slate-900 lg:min-h-0 lg:overflow-y-scroll lg:[scrollbar-gutter:stable]">
@@ -93,7 +206,7 @@ export default function CampaignList() {
                 <th className="p-4 text-left">Campaign</th>
                 <th className="p-4 text-left">Platform</th>
                 <th className="p-4 text-left">Audience</th>
-                <th className="p-4 text-right">Budget</th>
+                <th className="p-4 text-right">Budget (₹)</th>
                 <th className="p-4 text-center">Status</th>
                 <th className="p-4 text-center">Actions</th>
               </tr>
@@ -141,6 +254,7 @@ export default function CampaignList() {
                       >
                         <option value="active">Active</option>
                         <option value="paused">Paused</option>
+                        <option value="completed">Completed</option>
                       </select>
                     </td>
 

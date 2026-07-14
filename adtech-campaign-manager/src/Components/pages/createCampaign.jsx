@@ -171,7 +171,7 @@ export default function CreateCampaign() {
         </div>
         <div>
           <label className="mb-2 block font-medium text-gray-900 dark:text-slate-100">
-            Budget
+            Budget (₹)
           </label>
 
           <input
@@ -184,12 +184,13 @@ export default function CreateCampaign() {
                 limitCampaignBudget(e.target.value)
               )
             }
-            placeholder="Enter budget"
+            placeholder="Enter budget in Rupees"
             className="number-input-no-spinner w-full rounded-md border border-gray-300 bg-white p-3 text-gray-900 focus:border-blue-500 focus:outline-none dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100"
           />
 
           <p className="mt-2 text-sm text-gray-500 dark:text-slate-400">
-            Maximum budget: {MAX_CAMPAIGN_BUDGET_LABEL}
+             Maximum budget:{" "}
+            {MAX_CAMPAIGN_BUDGET_LABEL}
           </p>
         </div>
         <button

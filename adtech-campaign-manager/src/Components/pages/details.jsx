@@ -5,6 +5,7 @@ import { useCampaigns } from "../../hooks/useCampaigns.js";
 const STATUS_STYLES = {
   active: "bg-green-100 text-green-700",
   paused: "bg-yellow-100 text-yellow-700",
+  completed: "bg-blue-100 text-blue-700",
 };
 
 function formatCurrency(value) {

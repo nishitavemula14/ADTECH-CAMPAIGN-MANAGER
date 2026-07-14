@@ -51,6 +51,10 @@ export function CampaignProvider({ children }) {
     setCampaigns(updatedCampaigns);
   };
 
+  const deleteAllCampaigns = () => {
+    setCampaigns([]);
+  };
+
   
   const updateCampaign = (id, updatedData) => {
     const updatedCampaigns = campaigns.map((campaign) => {
@@ -99,6 +103,7 @@ export function CampaignProvider({ children }) {
         campaigns,
         addCampaign,
         deleteCampaign,
+        deleteAllCampaigns,
         updateCampaign,
         toggleStatus,
         getCampaign,
