@@ -32,15 +32,12 @@ function formatCurrency(value) {
 
 export default function CampaignList() {
   const { currentUser } = useAuth();
-  const { campaigns, deleteCampaign, deleteAllCampaigns, updateCampaign } =
-    useCampaigns();
+  const { campaigns, deleteCampaign, updateCampaign } = useCampaigns();
   const [search, setSearch] = useState("");
   const [platformFilter, setPlatformFilter] = useState("all");
   const [statusFilter, setStatusFilter] = useState("all");
   const [campaignToDelete, setCampaignToDelete] = useState(null);
-  const isAdmin = currentUser?.role === "admin";
   const isSuperAdmin = currentUser?.role === "superadmin";
-  const canBulkDelete = !isAdmin;
 
   function canManageCampaign(campaign) {
     return isSuperAdmin || campaign.ownerId === currentUser?.id;
@@ -51,7 +48,9 @@ export default function CampaignList() {
   }
 
   function confirmDeleteAllCampaigns() {
-    if (campaigns.length === 0) {
+    const deletableCampaigns = filteredCampaigns.filter(canManageCampaign);
+
+    if (deletableCampaigns.length === 0) {
       toast.error("No campaigns to delete");
       return;
     }
@@ -84,7 +83,9 @@ export default function CampaignList() {
               onClick={(e) => {
                 e.preventDefault();
                 e.stopPropagation();
-                deleteAllCampaigns();
+                deletableCampaigns.forEach((campaign) =>
+                  deleteCampaign(campaign.id)
+                );
                 setCampaignToDelete(null);
                 toast.dismiss(toastItem.id);
                 toast.success("All campaigns deleted successfully");
@@ -132,6 +133,7 @@ export default function CampaignList() {
 
     return matchesSearch && matchesPlatform && matchesStatus;
   });
+  const canBulkDelete = filteredCampaigns.some(canManageCampaign);
 
   return (
     <div className="mx-auto flex min-h-full max-w-7xl flex-col overflow-visible p-3 sm:p-4 lg:h-full lg:min-h-0 lg:overflow-hidden lg:p-6">
@@ -153,7 +155,7 @@ export default function CampaignList() {
             type="button"
             onClick={confirmDeleteAllCampaigns}
             className="w-full rounded-lg bg-red-600 px-5 py-2 text-center font-semibold text-white transition hover:bg-red-700 disabled:cursor-not-allowed disabled:bg-red-300 sm:w-auto"
-            disabled={campaigns.length === 0 || !canBulkDelete}
+            disabled={filteredCampaigns.length === 0 || !canBulkDelete}
           >
             Delete All
           </button>
@@ -215,7 +217,113 @@ export default function CampaignList() {
           }
         />
       ) : (
-        <div className="campaign-list-scrollbar flex-1 overflow-x-auto rounded-xl bg-white shadow dark:bg-slate-900 lg:min-h-0 lg:overflow-y-scroll lg:[scrollbar-gutter:stable]">
+        <div className="flex-1 lg:min-h-0">
+          <div className="grid gap-3 md:hidden">
+            {filteredCampaigns.map((campaign) => {
+              const status = String(campaign.status).toLowerCase();
+
+              return (
+                <article
+                  key={campaign.id}
+                  className="rounded-lg bg-white p-4 shadow dark:bg-slate-900"
+                >
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="min-w-0">
+                      <p className="text-xs font-semibold uppercase text-gray-500 dark:text-slate-400">
+                        ID {campaign.displayId || campaign.id}
+                      </p>
+                      <Link
+                        to={`/campaigns/${campaign.id}`}
+                        className="mt-1 block break-words text-base font-bold text-blue-600 hover:underline"
+                      >
+                        {campaign.name}
+                      </Link>
+                    </div>
+
+                    {canManageCampaign(campaign) ? (
+                      <select
+                        value={status}
+                        onChange={(e) =>
+                          updateCampaign(campaign.id, {
+                            status: e.target.value,
+                          })
+                        }
+                        className={`shrink-0 rounded-full border px-3 py-1 text-sm font-semibold capitalize outline-none ${
+                          STATUS_STYLES[status] || STATUS_STYLES.active
+                        }`}
+                      >
+                        <option value="active">Active</option>
+                        <option value="paused">Paused</option>
+                        <option value="completed">Completed</option>
+                      </select>
+                    ) : (
+                      <span
+                        className={`shrink-0 rounded-full border px-3 py-1 text-sm font-semibold capitalize ${
+                          STATUS_STYLES[status] || STATUS_STYLES.active
+                        }`}
+                      >
+                        {status}
+                      </span>
+                    )}
+                  </div>
+
+                  <dl className="mt-4 grid grid-cols-2 gap-3 text-sm">
+                    <div>
+                      <dt className="text-gray-500 dark:text-slate-400">
+                        Platform
+                      </dt>
+                      <dd className="mt-1 font-semibold">{campaign.platform}</dd>
+                    </div>
+                    <div>
+                      <dt className="text-gray-500 dark:text-slate-400">
+                        Audience
+                      </dt>
+                      <dd className="mt-1 font-semibold">{campaign.ageGroup}</dd>
+                    </div>
+                    <div className="col-span-2">
+                      <dt className="text-gray-500 dark:text-slate-400">
+                        Budget
+                      </dt>
+                      <dd className="mt-1 break-words font-semibold">
+                        {formatCurrency(campaign.budget)}
+                      </dd>
+                    </div>
+                  </dl>
+
+                  <div className="mt-4 flex items-center justify-end gap-2">
+                    {canManageCampaign(campaign) ? (
+                      <>
+                        <Link
+                          to={`/campaigns/${campaign.id}/edit`}
+                          className="rounded-lg p-2 text-green-600 transition hover:bg-green-50"
+                          title="Edit campaign"
+                          aria-label="Edit campaign"
+                        >
+                          <Edit size={18} />
+                        </Link>
+
+                        <button
+                          type="button"
+                          onClick={() => confirmDeleteCampaign(campaign)}
+                          className="rounded-lg p-2 text-red-600 transition hover:bg-red-50"
+                          title="Delete campaign"
+                          aria-label="Delete campaign"
+                        >
+                          <Trash2 size={18} />
+                        </button>
+                      </>
+                    ) : (
+                      <span className="text-sm font-semibold text-gray-400">
+                        Read only
+                      </span>
+                    )}
+                  </div>
+                </article>
+              );
+            })}
+          </div>
+
+          <div className="campaign-list-scrollbar hidden overflow-x-auto rounded-xl bg-white shadow dark:bg-slate-900 md:block lg:h-full lg:overflow-y-scroll lg:[scrollbar-gutter:stable]">
           <table className="w-full min-w-[900px]">
             <thead className="sticky top-0 z-10 bg-gray-100 dark:bg-slate-800">
               <tr>
@@ -320,6 +428,7 @@ export default function CampaignList() {
               })}
             </tbody>
           </table>
+          </div>
         </div>
       )}
 

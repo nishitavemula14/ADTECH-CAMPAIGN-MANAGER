@@ -22,6 +22,11 @@ export default function Signup() {
       return;
     }
 
+    if (username.includes("@")) {
+      toast.error("Use a username, not an email address");
+      return;
+    }
+
     if (password.length < 6) {
       toast.error("Password must be at least 6 characters");
       return;
@@ -60,7 +65,7 @@ export default function Signup() {
 
         <div>
           <label className="mb-2 block font-medium text-gray-900 dark:text-slate-100">
-            Username or email
+            Username
           </label>
           <input
             type="text"

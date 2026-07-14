@@ -34,8 +34,7 @@ export default function Dashboard() {
     (sum, campaign) => sum + Number(campaign.budget),
     0
   );
-  const topActiveCampaigns = campaigns
-    .filter((campaign) => String(campaign.status).toLowerCase() === "active")
+  const topCampaigns = campaigns
     .sort((a, b) => Number(b.budget) - Number(a.budget))
     .slice(0, 5);
   const groupedBudgets = {};
@@ -119,17 +118,17 @@ export default function Dashboard() {
       <div className="mt-6 grid min-h-0 flex-1 grid-cols-1 gap-6 lg:grid-cols-2">
         <div className="flex min-h-[420px] flex-col rounded-lg bg-white p-4 shadow dark:bg-slate-900 sm:p-5 lg:min-h-0">
           <h2 className="mb-6 shrink-0 text-xl font-semibold">
-            Top 5 Active Campaigns
+            Top 5 Campaigns
           </h2>
 
-          {topActiveCampaigns.length > 0 ? (
+          {topCampaigns.length > 0 ? (
             <div className="min-h-[320px] flex-1 lg:min-h-0">
-              <BarChart data={topActiveCampaigns} />
+              <BarChart data={topCampaigns} />
             </div>
           ) : (
             <EmptyState
-              title="No Active Campaigns"
-              message="Active campaigns will appear here."
+              title="No Campaigns"
+              message="Campaigns will appear here."
               className="border-0 bg-transparent p-6 text-gray-400 dark:bg-transparent dark:text-slate-500"
             />
           )}

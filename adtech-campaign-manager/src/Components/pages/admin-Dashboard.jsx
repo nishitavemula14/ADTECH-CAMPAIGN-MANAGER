@@ -1,38 +1,39 @@
 import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
-import { PlusCircle, Search, Trash2 } from "lucide-react";
-import toast from "react-hot-toast";
+import { PlusCircle, Search } from "lucide-react";
 
 import { useAuth } from "../../auth/useAuth.js";
 import { useCampaigns } from "../../hooks/useCampaigns.js";
 import EmptyState from "../atoms/empty.jsx";
-
-const STATUS_STYLES = {
-  active: "border-green-200 bg-green-100 text-green-700",
-  paused: "border-yellow-200 bg-yellow-100 text-yellow-700",
-  completed: "border-blue-200 bg-blue-100 text-blue-700",
-};
+import StatCard from "../atoms/statCard.jsx";
+import AdminCampaignCard from "../molecules/adminCampaignCard.jsx";
+import AdminUserCard from "../molecules/adminUserCard.jsx";
+import AdminCampaignsTable from "../organisms/adminCampaignsTable.jsx";
+import AdminUsersTable from "../organisms/adminUsersTable.jsx";
+import BarChart from "../organisms/barChart.jsx";
+import BudgetDonutChart from "../organisms/donutChart.jsx";
 
 function formatCurrency(value) {
   return `\u20B9${Number(value).toLocaleString()}`;
 }
 
-function formatStatus(status) {
-  const normalizedStatus = String(status).toLowerCase();
-  return normalizedStatus.charAt(0).toUpperCase() + normalizedStatus.slice(1);
-}
-
-export default function AdminDashboard() {
-  const {
-    users,
-    currentUser,
-    changeUserRole,
-    deleteUser,
-  } = useAuth();
-  const { allCampaigns } = useCampaigns();
+export default function AdminDashboard({ showAnalytics = true }) {
+  const { users, currentUser } = useAuth();
+  const { campaigns, allCampaigns } = useCampaigns();
   const [search, setSearch] = useState("");
   const [selectedUserId, setSelectedUserId] = useState(null);
+  const [selectedStatus, setSelectedStatus] = useState("active");
+  const [budgetGroup, setBudgetGroup] = useState("platform");
   const isSuperAdmin = currentUser?.role === "superadmin";
+  const statusOptions = [
+    { label: "Active", value: "active" },
+    { label: "Paused", value: "paused" },
+    { label: "Completed", value: "completed" },
+  ];
+  const budgetGroups = [
+    { label: "Platform", value: "platform" },
+    { label: "Age", value: "ageGroup" },
+  ];
   const regularUsers = useMemo(
     () => users.filter((user) => user.role !== "superadmin"),
     [users]
@@ -50,7 +51,7 @@ export default function AdminDashboard() {
 
         return {
           ...user,
-          displayId: index + 1,
+          displayId: user.displayId || String(index + 1),
           campaignCount: campaigns.length,
           totalBudget,
         };
@@ -88,33 +89,36 @@ export default function AdminDashboard() {
   const activeCampaigns = allCampaigns.filter(
     (campaign) => String(campaign.status).toLowerCase() === "active"
   ).length;
+  const analyticsCampaigns = isSuperAdmin ? allCampaigns : campaigns;
+  const showDashboardAnalytics =
+    showAnalytics && ["admin", "superadmin"].includes(currentUser?.role);
+  const topCampaigns = [...analyticsCampaigns]
+    .sort((a, b) => Number(b.budget || 0) - Number(a.budget || 0))
+    .slice(0, 5);
+  const filteredStatusCampaigns = analyticsCampaigns.filter(
+    (campaign) => String(campaign.status).toLowerCase() === selectedStatus
+  );
+  const groupedBudgets = filteredStatusCampaigns.reduce((groups, campaign) => {
+    const groupName = campaign[budgetGroup] || "Not Set";
 
-  function updateRole(userId, role) {
-    const result = changeUserRole(userId, role);
-
-    if (!result.ok) {
-      toast.error(result.message);
-      return;
+    if (!groups[groupName]) {
+      groups[groupName] = {
+        name: groupName,
+        budget: 0,
+        campaigns: [],
+      };
     }
 
-    toast.success("User role updated");
-  }
+    groups[groupName].budget += Number(campaign.budget || 0);
+    groups[groupName].campaigns.push(campaign);
 
-  function removeUser(userId) {
-    const result = deleteUser(userId);
-
-    if (!result.ok) {
-      toast.error(result.message);
-      return;
-    }
-
-    if (selectedUserId === userId) {
-      setSelectedUserId(null);
-      setSearch("");
-    }
-
-    toast.success("User deleted");
-  }
+    return groups;
+  }, {});
+  const budgetBreakdown = Object.values(groupedBudgets);
+  const filteredBudget = budgetBreakdown.reduce(
+    (sum, item) => sum + item.budget,
+    0
+  );
 
   return (
     <div className="mx-auto flex min-h-full max-w-7xl flex-col p-3 sm:p-4 lg:p-6">
@@ -140,207 +144,162 @@ export default function AdminDashboard() {
       </div>
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <div className="rounded-lg bg-white p-5 shadow dark:bg-slate-900">
-          <p className="text-gray-500 dark:text-slate-400">Total Users</p>
-          <h2 className="mt-2 text-3xl font-bold">{regularUsers.length}</h2>
-        </div>
-
-        <div className="rounded-lg bg-white p-5 shadow dark:bg-slate-900">
-          <p className="text-gray-500 dark:text-slate-400">Total Campaigns</p>
-          <h2 className="mt-2 text-3xl font-bold">{allCampaigns.length}</h2>
-        </div>
-
-        <div className="rounded-lg bg-white p-5 shadow dark:bg-slate-900">
-          <p className="text-gray-500 dark:text-slate-400">Active Campaigns</p>
-          <h2 className="mt-2 text-3xl font-bold">{activeCampaigns}</h2>
-        </div>
-
-        <div className="rounded-lg bg-white p-5 shadow dark:bg-slate-900">
-          <p className="text-gray-500 dark:text-slate-400">Total Budget</p>
-          <h2 className="mt-2 text-3xl font-bold">
-            {formatCurrency(totalBudget)}
-          </h2>
-        </div>
+        <StatCard label="Total Users" value={regularUsers.length} />
+        <StatCard label="Total Campaigns" value={allCampaigns.length} />
+        <StatCard label="Active Campaigns" value={activeCampaigns} />
+        <StatCard label="Total Budget" value={formatCurrency(totalBudget)} />
       </div>
 
-      <section className="mt-6 flex min-h-0 flex-1 flex-col">
-        <div className="mb-3 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <h2 className="text-xl font-semibold">
-              {selectedUser ? `${selectedUser.username} Campaigns` : "Users"}
+      {showDashboardAnalytics && (
+        <section className="mt-6 grid min-h-0 grid-cols-1 gap-6 lg:grid-cols-2">
+          <div className="flex min-h-[420px] flex-col rounded-lg bg-white p-4 shadow dark:bg-slate-900 sm:p-5">
+            <h2 className="mb-6 shrink-0 text-xl font-semibold">
+              Top 5 Campaigns
             </h2>
-            {selectedUser && (
-              <button
-                type="button"
-                onClick={() => {
-                  setSelectedUserId(null);
-                  setSearch("");
-                }}
-                className="mt-1 text-sm font-semibold text-blue-600 hover:underline"
-              >
-                Back to users
-              </button>
+
+            {topCampaigns.length > 0 ? (
+              <div className="min-h-[320px] flex-1">
+                <BarChart data={topCampaigns} />
+              </div>
+            ) : (
+              <EmptyState
+                title="No Campaigns"
+                message="Top campaigns will appear here after campaigns are created."
+                className="border-0 bg-transparent p-6 text-gray-400 dark:bg-transparent dark:text-slate-500"
+              />
             )}
           </div>
 
-          {selectedUser && (
-            <label className="relative w-full sm:w-80">
-              <Search
-                className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
-                size={18}
-              />
-              <input
-                type="text"
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                placeholder="Search selected user's campaigns"
-                className="w-full rounded-lg border border-gray-200 bg-white py-3 pl-10 pr-3 text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
-              />
-            </label>
-          )}
-        </div>
+          <div className="flex min-h-[420px] flex-col overflow-visible rounded-lg bg-white p-4 shadow dark:bg-slate-900 sm:p-5">
+            <div className="mb-6 flex shrink-0 flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+              <h2 className="text-lg font-semibold sm:text-xl">
+                Budget Breakdown By{" "}
+                {budgetGroup === "platform" ? "Platform" : "Age"}
+              </h2>
 
-        {!selectedUser && (
-          <div className="campaign-list-scrollbar overflow-x-auto rounded-lg bg-white shadow dark:bg-slate-900">
-            <table className="w-full min-w-[720px]">
-              <thead className="bg-gray-100 dark:bg-slate-800">
-                <tr>
-                  <th className="p-4 text-left">ID</th>
-                  <th className="p-4 text-left">Username</th>
-                  <th className="p-4 text-left">Role</th>
-                  <th className="p-4 text-right">Campaigns</th>
-                  <th className="p-4 text-right">Overall Budget</th>
-                  {isSuperAdmin && <th className="p-4 text-center">Actions</th>}
-                </tr>
-              </thead>
-
-              <tbody>
-                {userSummaries.map((user) => (
-                  <tr
-                    key={user.id}
-                    className="border-t border-gray-100 hover:bg-gray-50 dark:border-slate-800 dark:hover:bg-slate-800/70"
+              <div className="w-full sm:w-40">
+                <label className="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-slate-400">
+                  Group By
+                  <select
+                    value={budgetGroup}
+                    onChange={(event) => setBudgetGroup(event.target.value)}
+                    className="mt-1 block w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm font-medium normal-case tracking-normal text-gray-900 focus:border-blue-500 focus:outline-none dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100"
                   >
-                    <td className="p-4 font-semibold text-gray-500 dark:text-slate-400">
-                      {user.displayId}
-                    </td>
-                    <td className="p-4">
-                      <button
-                        type="button"
-                        onClick={() => setSelectedUserId(user.id)}
-                        className="font-semibold text-blue-600 hover:underline"
-                      >
-                        {user.username}
-                      </button>
-                    </td>
-                    <td className="p-4">
-                      {isSuperAdmin ? (
-                        <select
-                          value={user.role}
-                          onChange={(e) => updateRole(user.id, e.target.value)}
-                          className="rounded-md border border-gray-300 bg-white p-2 text-sm capitalize text-gray-900 focus:border-blue-500 focus:outline-none dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100"
-                        >
-                          <option value="user">User</option>
-                          <option value="admin">Admin</option>
-                        </select>
-                      ) : (
-                        <span className="capitalize">{user.role}</span>
-                      )}
-                    </td>
-                    <td className="p-4 text-right font-semibold">
-                      {user.campaignCount}
-                    </td>
-                    <td className="p-4 text-right font-semibold">
-                      {formatCurrency(user.totalBudget)}
-                    </td>
-                    {isSuperAdmin && (
-                      <td className="p-4">
-                        <div className="flex justify-center gap-2">
-                          <button
-                            type="button"
-                            onClick={() => removeUser(user.id)}
-                            className="rounded-lg p-2 text-red-600 transition hover:bg-red-50"
-                            aria-label="Delete user"
-                            title="Delete user"
-                          >
-                            <Trash2 size={18} />
-                          </button>
-                        </div>
-                      </td>
-                    )}
-                  </tr>
+                    {budgetGroups.map((group) => (
+                      <option key={group.value} value={group.value}>
+                        {group.label}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+              </div>
+            </div>
+
+            <div className="min-h-[320px] flex-1 overflow-visible">
+              <BudgetDonutChart
+                data={budgetBreakdown}
+                totalBudget={filteredBudget}
+                groupBy={budgetGroup}
+                selectedStatus={selectedStatus}
+                statusOptions={statusOptions}
+                onStatusChange={setSelectedStatus}
+              />
+            </div>
+          </div>
+        </section>
+      )}
+
+      {!showAnalytics && (
+        <section className="mt-6 flex min-h-0 flex-1 flex-col">
+          <div className="mb-3 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <h2 className="text-xl font-semibold">
+                {selectedUser ? `${selectedUser.username} Campaigns` : "Users"}
+              </h2>
+              {selectedUser && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSelectedUserId(null);
+                    setSearch("");
+                  }}
+                  className="mt-1 text-sm font-semibold text-blue-600 hover:underline"
+                >
+                  Back to users
+                </button>
+              )}
+            </div>
+
+            {selectedUser && (
+              <label className="relative w-full sm:w-80">
+                <Search
+                  className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
+                  size={18}
+                />
+                <input
+                  type="text"
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  placeholder="Search selected user's campaigns"
+                  className="w-full rounded-lg border border-gray-200 bg-white py-3 pl-10 pr-3 text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
+                />
+              </label>
+            )}
+          </div>
+
+          {!selectedUser && (
+            <div className="campaign-list-scrollbar grid max-h-[calc(100dvh-300px)] gap-3 overflow-y-auto pr-1 lg:hidden md:grid-cols-2">
+              {userSummaries.map((user) => (
+                <AdminUserCard
+                  key={user.id}
+                  user={user}
+                  isSuperAdmin={false}
+                  formatCurrency={formatCurrency}
+                  onSelectUser={setSelectedUserId}
+                />
+              ))}
+            </div>
+          )}
+
+          {!selectedUser && (
+            <AdminUsersTable
+              users={userSummaries}
+              isSuperAdmin={false}
+              formatCurrency={formatCurrency}
+              onSelectUser={setSelectedUserId}
+            />
+          )}
+
+          {!selectedUser ? null : filteredCampaigns.length === 0 ? (
+            <EmptyState
+              title="No Campaigns Found"
+              message={
+                search.trim()
+                  ? `No campaigns match your search for ${selectedUser.username}.`
+                  : `${selectedUser.username} has not created any campaigns yet.`
+              }
+            />
+          ) : (
+            <div>
+              <div className="campaign-list-scrollbar grid max-h-[calc(100dvh-340px)] gap-3 overflow-y-auto pr-1 lg:hidden md:grid-cols-2">
+                {filteredCampaigns.map((campaign) => (
+                  <AdminCampaignCard
+                    key={campaign.id}
+                    campaign={campaign}
+                    formatCurrency={formatCurrency}
+                  />
                 ))}
-              </tbody>
-            </table>
-          </div>
-        )}
+              </div>
 
-        {!selectedUser ? null : filteredCampaigns.length === 0 ? (
-          <EmptyState
-            title="No Campaigns Found"
-            message={
-              search.trim()
-                ? `No campaigns match your search for ${selectedUser.username}.`
-                : `${selectedUser.username} has not created any campaigns yet.`
-            }
-          />
-        ) : (
-          <div className="campaign-list-scrollbar overflow-x-auto rounded-lg bg-white shadow dark:bg-slate-900">
-            <table className="w-full min-w-[960px]">
-              <thead className="bg-gray-100 dark:bg-slate-800">
-                <tr>
-                  <th className="p-4 text-left">Campaign</th>
-                  <th className="p-4 text-left">Platform</th>
-                  <th className="p-4 text-left">Audience</th>
-                  <th className="p-4 text-right">Budget</th>
-                  <th className="p-4 text-center">Status</th>
-                  <th className="p-4 text-left">Created</th>
-                </tr>
-              </thead>
+              <AdminCampaignsTable
+                campaigns={filteredCampaigns}
+                formatCurrency={formatCurrency}
+              />
+            </div>
+          )}
+        </section>
+      )}
 
-              <tbody>
-                {filteredCampaigns.map((campaign) => {
-                  const status = String(campaign.status).toLowerCase();
-
-                  return (
-                    <tr
-                      key={campaign.id}
-                      className="border-t border-gray-100 hover:bg-gray-50 dark:border-slate-800 dark:hover:bg-slate-800/70"
-                    >
-                      <td className="p-4">
-                        <span className="block font-medium">
-                          {campaign.name}
-                        </span>
-                        <span className="text-xs text-gray-500 dark:text-slate-400">
-                          ID: {campaign.displayId || campaign.id}
-                        </span>
-                      </td>
-                      <td className="p-4">{campaign.platform}</td>
-                      <td className="p-4">{campaign.ageGroup}</td>
-                      <td className="p-4 text-right font-semibold">
-                        {formatCurrency(campaign.budget)}
-                      </td>
-                      <td className="p-4 text-center">
-                        <span
-                          className={`inline-flex rounded-full border px-3 py-1 text-sm font-semibold ${
-                            STATUS_STYLES[status] || STATUS_STYLES.active
-                          }`}
-                        >
-                          {formatStatus(campaign.status)}
-                        </span>
-                      </td>
-                      <td className="p-4">
-                        {campaign.createdAt
-                          ? new Date(campaign.createdAt).toLocaleDateString()
-                          : "Not available"}
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
-        )}
-      </section>
     </div>
   );
 }

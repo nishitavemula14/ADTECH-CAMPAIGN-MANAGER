@@ -20,7 +20,7 @@ function formatStatus(status) {
 
 export default function CampaignDetail() {
   const { campaignId } = useParams();
-  const { currentUser } = useAuth();
+  const { currentUser, users } = useAuth();
   const { getCampaign, toggleStatus } = useCampaigns();
   const campaign = getCampaign(campaignId);
 
@@ -29,6 +29,7 @@ export default function CampaignDetail() {
   }
 
   const status = String(campaign.status).toLowerCase();
+  const owner = users.find((user) => user.id === campaign.ownerId);
   const canManageCampaign =
     currentUser?.role === "superadmin" || campaign.ownerId === currentUser?.id;
 
@@ -79,6 +80,15 @@ export default function CampaignDetail() {
               {campaign.displayId || campaign.id}
             </p>
           </div>
+
+          {currentUser?.role === "superadmin" && (
+            <div>
+              <p className="text-sm font-semibold text-gray-500 dark:text-slate-400">Created By</p>
+              <p className="mt-1 text-lg font-bold text-gray-900 dark:text-slate-100">
+                {owner?.username || "Unknown user"}
+              </p>
+            </div>
+          )}
 
           <div>
             <p className="text-sm font-semibold text-gray-500 dark:text-slate-400">Status</p>

@@ -7,25 +7,11 @@ const USERS_STORAGE_KEY = "adtech_users";
 const CURRENT_USER_STORAGE_KEY = "adtech_current_user";
 const LEGACY_DEFAULT_USER_IDENTIFIERS = [
   "admin-1",
-  "nameadmin@gmail.com",
   "user-1",
   "user1",
   "user-2",
   "user2",
 ];
-
-function isEmail(value) {
-  return value.includes("@");
-}
-
-function isAdminEmail(value) {
-  const normalizedValue = value.toLowerCase();
-  return isEmail(normalizedValue) && normalizedValue.includes("admin");
-}
-
-function getRoleForUsername(username) {
-  return isAdminEmail(username) ? "admin" : "user";
-}
 
 function normalizeUserRole(user) {
   if (["user", "admin", "superadmin"].includes(user.role)) {
@@ -34,7 +20,7 @@ function normalizeUserRole(user) {
 
   return {
     ...user,
-    role: getRoleForUsername(user.username),
+    role: "user",
   };
 }
 
@@ -43,8 +29,15 @@ function isLegacyDefaultUser(user) {
     LEGACY_DEFAULT_USER_IDENTIFIERS.includes(user.username.toLowerCase());
 }
 
+function isLegacyEmailAdminUser(user) {
+  const username = user.username.toLowerCase();
+  return user.role === "admin" && username.includes("@");
+}
+
 function reconcileDefaultUsers(users) {
-  const userManagedUsers = users.filter((user) => !isLegacyDefaultUser(user));
+  const userManagedUsers = users.filter(
+    (user) => !isLegacyDefaultUser(user) && !isLegacyEmailAdminUser(user)
+  );
 
   return DEFAULT_USERS.reduce((resolvedUsers, defaultUser) => {
     const existingUserIndex = resolvedUsers.findIndex(
@@ -85,6 +78,23 @@ function readStoredUsers() {
   }
 }
 
+function addUserDisplayIds(users) {
+  let displayId = 0;
+
+  return users.map((user) => {
+    if (user.role === "superadmin") {
+      return user;
+    }
+
+    displayId += 1;
+
+    return {
+      ...user,
+      displayId: displayId.toString(),
+    };
+  });
+}
+
 export function AuthProvider({ children }) {
   const [users, setUsers] = useLocalStorage(USERS_STORAGE_KEY, DEFAULT_USERS);
   const [currentUser, setCurrentUser] = useLocalStorage(
@@ -121,10 +131,6 @@ export function AuthProvider({ children }) {
   function login(username, password) {
     const normalizedUsername = username.trim().toLowerCase();
 
-    if (isEmail(normalizedUsername) && !isAdminEmail(normalizedUsername)) {
-      return false;
-    }
-
     const latestUsers = readStoredUsers();
     const user = latestUsers.find(
       (item) =>
@@ -133,22 +139,18 @@ export function AuthProvider({ children }) {
     );
 
     if (!user) {
-      return false;
+      return { ok: false };
     }
 
     setCurrentUser(normalizeUserRole(user));
-    return true;
+    return {
+      ok: true,
+      user: normalizeUserRole(user),
+    };
   }
 
   function signup(username, password) {
     const normalizedUsername = username.trim();
-
-    if (isEmail(normalizedUsername) && !isAdminEmail(normalizedUsername)) {
-      return {
-        ok: false,
-        message: "Users must sign up with a username. Admin emails must include admin.",
-      };
-    }
 
     const latestUsers = readStoredUsers();
     const usernameExists = latestUsers.some(
@@ -166,7 +168,7 @@ export function AuthProvider({ children }) {
       id: `user-${Date.now()}`,
       username: normalizedUsername,
       password,
-      role: getRoleForUsername(normalizedUsername),
+      role: "user",
     };
 
     setUsers([...latestUsers, user]);
@@ -252,7 +254,7 @@ export function AuthProvider({ children }) {
   return (
     <AuthContext.Provider
       value={{
-        users,
+        users: addUserDisplayIds(users),
         currentUser,
         isAuthenticated: Boolean(currentUser),
         isAdmin: currentUser?.role === "admin",

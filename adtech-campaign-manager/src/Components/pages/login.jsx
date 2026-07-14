@@ -1,31 +1,33 @@
 import { useState } from "react";
-import { Link, Navigate, useLocation, useNavigate } from "react-router-dom";
+import { Link, Navigate, useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 import { useAuth } from "../../auth/useAuth.js";
 
 export default function Login() {
-  const { isAuthenticated, login } = useAuth();
-  const location = useLocation();
+  const { currentUser, isAuthenticated, login } = useAuth();
   const navigate = useNavigate();
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
 
-  const redirectTo = location.state?.from?.pathname || "/";
+  function getRoleRedirect(role) {
+    return ["admin", "superadmin"].includes(role) ? "/admin" : "/";
+  }
 
   if (isAuthenticated) {
-    return <Navigate to={redirectTo} replace />;
+    return <Navigate to={getRoleRedirect(currentUser?.role)} replace />;
   }
 
   function handleSubmit(e) {
     e.preventDefault();
+    const result = login(username.trim(), password);
 
-    if (!login(username.trim(), password)) {
+    if (!result.ok) {
       toast.error("Invalid username or password");
       return;
     }
 
     toast.success("Logged in successfully");
-    navigate(redirectTo, { replace: true });
+    navigate(getRoleRedirect(result.user.role), { replace: true });
   }
 
   return (
@@ -45,7 +47,7 @@ export default function Login() {
 
         <div>
           <label className="mb-2 block font-medium text-gray-900 dark:text-slate-100">
-            Username or email
+            Username
           </label>
           <input
             type="text"

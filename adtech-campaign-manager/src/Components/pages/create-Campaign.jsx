@@ -120,7 +120,7 @@ export default function CreateCampaign() {
               <option value="">Select User</option>
               {assignableUsers.map((user) => (
                 <option key={user.id} value={user.id}>
-                  {user.username} ({user.role})
+                  Owner {user.displayId || user.id}: {user.username} ({user.role})
                 </option>
               ))}
             </select>

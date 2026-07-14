@@ -4,6 +4,7 @@ import {
   ListChecks,
   LogOut,
   PlusCircle,
+  UserCog,
   Users,
 } from "lucide-react";
 import toast from "react-hot-toast";
@@ -13,6 +14,7 @@ import ThemeSwitcher from "../molecules/themeSwitcher.jsx";
 
 export default function AppLayout() {
   const { currentUser, logout } = useAuth();
+  const hasAdminDashboard = ["admin", "superadmin"].includes(currentUser?.role);
 
   function showCenteredToast(message, options = {}) {
     return toast(message, {
@@ -107,8 +109,8 @@ export default function AppLayout() {
 
         <div className="border-t border-gray-200 dark:border-slate-800" />
 
-        <nav className="flex gap-2 overflow-x-auto py-3 lg:flex-1 lg:flex-col lg:overflow-visible lg:py-4">
-          <div className="flex min-w-48 shrink-0 items-center gap-3 rounded-lg bg-gray-50 p-2 dark:bg-slate-800/70 sm:p-3 lg:min-w-0">
+        <nav className="grid grid-cols-[repeat(5,max-content)] gap-2 overflow-x-auto py-3 sm:grid-cols-[repeat(6,max-content)] lg:flex lg:flex-1 lg:flex-col lg:overflow-visible lg:py-4">
+          <div className="col-span-full flex min-w-0 items-center gap-3 rounded-lg bg-gray-50 p-2 dark:bg-slate-800/70 sm:p-3 lg:col-auto">
             <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-blue-100 text-sm font-bold uppercase text-blue-700 dark:bg-blue-950 dark:text-blue-200">
               {currentUser?.username?.charAt(0)}
             </div>
@@ -124,9 +126,9 @@ export default function AppLayout() {
           </div>
 
           <NavLink
-            to="/"
+            to={hasAdminDashboard ? "/admin" : "/"}
             className={({ isActive }) =>
-              `flex shrink-0 items-center gap-2 rounded-lg px-3 py-2 text-sm sm:gap-3 sm:text-base ${
+              `flex shrink-0 items-center justify-center gap-2 rounded-lg px-3 py-2 text-sm sm:gap-3 sm:text-base lg:justify-start ${
                 isActive
                   ? "bg-blue-600 text-white"
                   : "text-gray-700 hover:bg-gray-100 dark:text-slate-300 dark:hover:bg-slate-800"
@@ -140,7 +142,7 @@ export default function AppLayout() {
           <NavLink
             to="/campaigns"
             className={({ isActive }) =>
-              `flex shrink-0 items-center gap-2 rounded-lg px-3 py-2 text-sm sm:gap-3 sm:text-base ${
+              `flex shrink-0 items-center justify-center gap-2 rounded-lg px-3 py-2 text-sm sm:gap-3 sm:text-base lg:justify-start ${
                 isActive
                   ? "bg-blue-600 text-white"
                   : "text-gray-700 hover:bg-gray-100 dark:text-slate-300 dark:hover:bg-slate-800"
@@ -154,7 +156,7 @@ export default function AppLayout() {
           <NavLink
             to="/campaigns/new"
             className={({ isActive }) =>
-              `flex shrink-0 items-center gap-2 rounded-lg px-3 py-2 text-sm sm:gap-3 sm:text-base ${
+              `flex shrink-0 items-center justify-center gap-2 rounded-lg px-3 py-2 text-sm sm:gap-3 sm:text-base lg:justify-start ${
                 isActive
                   ? "bg-blue-600 text-white"
                   : "text-gray-700 hover:bg-gray-100 dark:text-slate-300 dark:hover:bg-slate-800"
@@ -167,9 +169,13 @@ export default function AppLayout() {
 
           {["admin", "superadmin"].includes(currentUser?.role) && (
             <NavLink
-              to="/admin"
+              to={
+                currentUser?.role === "superadmin"
+                  ? "/super-admin"
+                  : "/admin-monitor"
+              }
               className={({ isActive }) =>
-                `flex shrink-0 items-center gap-2 rounded-lg px-3 py-2 text-sm sm:gap-3 sm:text-base ${
+                `flex shrink-0 items-center justify-center gap-2 rounded-lg px-3 py-2 text-sm sm:gap-3 sm:text-base lg:justify-start ${
                   isActive
                     ? "bg-blue-600 text-white"
                     : "text-gray-700 hover:bg-gray-100 dark:text-slate-300 dark:hover:bg-slate-800"
@@ -178,6 +184,22 @@ export default function AppLayout() {
             >
               <Users size={18} />
               {currentUser?.role === "superadmin" ? "Super Admin" : "Admin"}
+            </NavLink>
+          )}
+
+          {currentUser?.role === "superadmin" && (
+            <NavLink
+              to="/user-management"
+              className={({ isActive }) =>
+                `flex shrink-0 items-center justify-center gap-2 rounded-lg px-3 py-2 text-sm sm:gap-3 sm:text-base lg:justify-start ${
+                  isActive
+                    ? "bg-blue-600 text-white"
+                    : "text-gray-700 hover:bg-gray-100 dark:text-slate-300 dark:hover:bg-slate-800"
+                }`
+              }
+            >
+              <UserCog size={18} />
+              User Management
             </NavLink>
           )}
 
@@ -202,7 +224,7 @@ export default function AppLayout() {
 
       </aside>
 
-      <main className="flex-1 overflow-visible p-3 sm:p-4 lg:h-screen lg:min-h-0 lg:overflow-y-auto lg:overflow-x-hidden lg:p-6">
+      <main className="flex-1 overflow-visible p-2 sm:p-4 lg:h-screen lg:min-h-0 lg:overflow-y-auto lg:overflow-x-hidden lg:p-6">
         <Outlet />
       </main>
 
