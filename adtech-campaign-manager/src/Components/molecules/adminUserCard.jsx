@@ -13,7 +13,7 @@ export default function AdminUserCard({
 
   return (
     <article className="rounded-lg bg-white p-4 shadow dark:bg-slate-900">
-      <div className="flex items-start justify-between gap-3">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div className="min-w-0">
           <p className="text-xs font-semibold uppercase text-gray-500 dark:text-slate-400">
             ID {user.displayId}
@@ -25,12 +25,12 @@ export default function AdminUserCard({
           >
             {userLabel}
           </button>
-          <p className="mt-1 break-words text-sm font-medium text-gray-600 dark:text-slate-300">
+          <p className="mt-1 break-all text-sm font-medium text-gray-600 dark:text-slate-300">
             {user.username}
           </p>
         </div>
 
-        <span className="shrink-0 rounded-full bg-gray-100 px-3 py-1 text-xs font-semibold capitalize text-gray-700 dark:bg-slate-800 dark:text-slate-200">
+        <span className="w-fit shrink-0 rounded-full bg-gray-100 px-3 py-1 text-xs font-semibold capitalize text-gray-700 dark:bg-slate-800 dark:text-slate-200">
           {user.role}
         </span>
       </div>

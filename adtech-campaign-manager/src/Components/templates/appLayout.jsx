@@ -1,4 +1,4 @@
-import { NavLink, Outlet } from "react-router-dom";
+import { NavLink, Outlet, useNavigate } from "react-router-dom";
 import {
   BarChart3,
   ListChecks,
@@ -14,6 +14,7 @@ import ThemeSwitcher from "../molecules/themeSwitcher.jsx";
 
 export default function AppLayout() {
   const { currentUser, logout } = useAuth();
+  const navigate = useNavigate();
   const hasAdminDashboard = ["admin", "superadmin"].includes(currentUser?.role);
   const currentUserLabel = getUserLabel(currentUser);
 
@@ -63,6 +64,7 @@ export default function AppLayout() {
                 e.stopPropagation();
                 toast.dismiss(toastItem.id);
                 logout();
+                navigate("/login", { replace: true });
                 showCenteredToast("Logged out successfully", {
                   duration: 800,
                 });
@@ -210,7 +212,7 @@ export default function AppLayout() {
 
       </aside>
 
-      <main className="flex-1 overflow-visible p-2 sm:p-4 lg:h-screen lg:min-h-0 lg:overflow-y-auto lg:overflow-x-hidden lg:p-6">
+      <main className="min-w-0 flex-1 overflow-visible p-2 sm:p-4 lg:h-screen lg:min-h-0 lg:overflow-y-auto lg:overflow-x-hidden lg:p-6">
         <Outlet />
       </main>
 

@@ -10,7 +10,7 @@ export default function AdminUsersTable({
 }) {
   return (
     <div className="campaign-list-scrollbar hidden max-h-[calc(100dvh-300px)] overflow-auto rounded-lg bg-white shadow dark:bg-slate-900 lg:block">
-      <table className="w-full min-w-[720px]">
+      <table className="w-full min-w-[860px]">
         <thead className="bg-gray-100 dark:bg-slate-800">
           <tr>
             <th className="p-4 text-left">ID</th>
@@ -44,7 +44,7 @@ export default function AdminUsersTable({
                     {userLabel}
                   </button>
                 </td>
-                <td className="p-4 text-sm font-medium text-gray-600 dark:text-slate-300">
+                <td className="max-w-64 break-all p-4 text-sm font-medium text-gray-600 dark:text-slate-300">
                   {user.username}
                 </td>
                 <td className="p-4 capitalize">{user.role}</td>

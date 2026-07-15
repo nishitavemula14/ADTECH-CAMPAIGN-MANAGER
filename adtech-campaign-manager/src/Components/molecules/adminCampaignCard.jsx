@@ -14,7 +14,7 @@ export default function AdminCampaignCard({
 
   return (
     <article className="rounded-lg bg-white p-4 shadow dark:bg-slate-900">
-      <div className="flex items-start justify-between gap-3">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div className="min-w-0">
           <p className="text-xs font-semibold uppercase text-gray-500 dark:text-slate-400">
             Campaign ID {campaign.displayId || campaign.id}
@@ -27,14 +27,14 @@ export default function AdminCampaignCard({
           <select
             value={status}
             onChange={(event) => onStatusChange(campaign.id, event.target.value)}
-            className="shrink-0 rounded-full border border-gray-300 bg-white px-3 py-1 text-sm font-semibold capitalize text-gray-900 outline-none dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100"
+            className="w-fit max-w-full shrink-0 rounded-full border border-gray-300 bg-white px-3 py-1 text-sm font-semibold capitalize text-gray-900 outline-none dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100"
           >
             <option value="active">Active</option>
             <option value="paused">Paused</option>
             <option value="completed">Completed</option>
           </select>
         ) : (
-          <StatusBadge status={campaign.status} className="shrink-0" />
+          <StatusBadge status={campaign.status} className="w-fit shrink-0" />
         )}
       </div>
 

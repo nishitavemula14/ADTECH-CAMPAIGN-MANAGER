@@ -68,8 +68,8 @@ export default function Signup() {
       return;
     }
 
-    toast.success("Account created successfully. Please login.");
-    navigate("/login", { replace: true });
+    toast.success("Account created successfully");
+    navigate("/", { replace: true });
   }
 
   return (

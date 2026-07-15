@@ -263,7 +263,7 @@ export default function CampaignList() {
                   key={campaign.id}
                   className="rounded-lg bg-white p-4 shadow dark:bg-slate-900"
                 >
-                  <div className="flex items-start justify-between gap-3">
+                  <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                     <div className="min-w-0">
                       <p className="text-xs font-semibold uppercase text-gray-500 dark:text-slate-400">
                         ID {getCampaignListId(campaign, index)}
@@ -284,7 +284,7 @@ export default function CampaignList() {
                             status: e.target.value,
                           })
                         }
-                        className={`shrink-0 rounded-full border px-3 py-1 text-sm font-semibold capitalize outline-none ${
+                        className={`w-fit max-w-full shrink-0 rounded-full border px-3 py-1 text-sm font-semibold capitalize outline-none ${
                           STATUS_STYLES[status] || STATUS_STYLES.active
                         }`}
                       >
@@ -294,7 +294,7 @@ export default function CampaignList() {
                       </select>
                     ) : (
                       <span
-                        className={`shrink-0 rounded-full border px-3 py-1 text-sm font-semibold capitalize ${
+                        className={`w-fit shrink-0 rounded-full border px-3 py-1 text-sm font-semibold capitalize ${
                           STATUS_STYLES[status] || STATUS_STYLES.active
                         }`}
                       >

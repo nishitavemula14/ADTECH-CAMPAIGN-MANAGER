@@ -142,13 +142,15 @@ export function AuthProvider({ children }) {
 
     const latestUsers = readStoredUsers();
     const user = latestUsers.find(
-      (item) =>
-        item.username.toLowerCase() === normalizedEmail &&
-        item.password === password
+      (item) => item.username.toLowerCase() === normalizedEmail
     );
 
     if (!user) {
-      return { ok: false, message: "Invalid email or password" };
+      return { ok: false, message: "Please sign up first" };
+    }
+
+    if (user.password !== password) {
+      return { ok: false, message: "Invalid password" };
     }
 
     setCurrentUser(normalizeUserRole(user));
@@ -188,6 +190,7 @@ export function AuthProvider({ children }) {
     };
 
     setUsers([...latestUsers, user]);
+    setCurrentUser(user);
 
     return {
       ok: true,
