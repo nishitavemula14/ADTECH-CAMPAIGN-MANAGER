@@ -8,7 +8,6 @@ import Dashboard from "../Components/pages/campaign-Dashboard.jsx";
 import EditCampaign from "../Components/pages/campaign-Edit.jsx";
 import Login from "../Components/pages/login.jsx";
 import Signup from "../Components/pages/signup.jsx";
-import UserManagement from "../Components/pages/user-Management.jsx";
 import { useAuth } from "../auth/useAuth.js";
 import { ProtectedRoute } from "./protectedRoute.jsx";
 
@@ -47,7 +46,6 @@ export default function AppRoutes() {
                   path="super-admin"
                   element={<AdminDashboard showAnalytics={false} />}
                 />
-                <Route path="user-management" element={<UserManagement />} />
               </Route>
             </Route>
           </Route>

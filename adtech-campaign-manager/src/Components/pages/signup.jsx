@@ -9,6 +9,21 @@ export default function Signup() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [errors, setErrors] = useState({});
+
+  const inputClassName =
+    "w-full rounded-md border bg-white p-3 text-gray-900 focus:outline-none dark:bg-slate-950 dark:text-slate-100";
+
+  function getInputClassName(fieldName) {
+    return errors[fieldName]
+      ? `${inputClassName} border-red-500 focus:border-red-500 dark:border-red-500`
+      : `${inputClassName} border-gray-300 focus:border-blue-500 dark:border-slate-700`;
+  }
+
+  function updateField(fieldName, value, setter) {
+    setter(value);
+    setErrors((currentErrors) => ({ ...currentErrors, [fieldName]: "" }));
+  }
 
   if (isAuthenticated) {
     return <Navigate to="/" replace />;
@@ -17,30 +32,44 @@ export default function Signup() {
   function handleSubmit(e) {
     e.preventDefault();
 
-    if (username.trim() === "" || password === "" || confirmPassword === "") {
-      toast.error("Please fill all the fields");
+    const nextErrors = {};
+
+    if (username.trim() === "") {
+      nextErrors.username = "Username is required";
+    }
+
+    if (password === "") {
+      nextErrors.password = "Password is required";
+    }
+
+    if (confirmPassword === "") {
+      nextErrors.confirmPassword = "Confirm password is required";
+    }
+
+    if (Object.keys(nextErrors).length > 0) {
+      setErrors(nextErrors);
       return;
     }
 
-    if (username.includes("@")) {
-      toast.error("Use a username, not an email address");
+    if (username.trim().includes("@")) {
+      setErrors({ username: "Use a username, not an email address" });
       return;
     }
 
     if (password.length < 6) {
-      toast.error("Password must be at least 6 characters");
+      setErrors({ password: "Password must be at least 6 characters" });
       return;
     }
 
     if (password !== confirmPassword) {
-      toast.error("Passwords do not match");
+      setErrors({ confirmPassword: "Passwords do not match" });
       return;
     }
 
     const result = signup(username, password);
 
     if (!result.ok) {
-      toast.error(result.message);
+      setErrors({ username: result.message || "Unable to create account" });
       return;
     }
 
@@ -70,11 +99,18 @@ export default function Signup() {
           <input
             type="text"
             value={username}
-            onChange={(e) => setUsername(e.target.value)}
+            onChange={(e) => updateField("username", e.target.value, setUsername)}
             placeholder="Choose a username"
-            className="w-full rounded-md border border-gray-300 bg-white p-3 text-gray-900 focus:border-blue-500 focus:outline-none dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100"
+            className={getInputClassName("username")}
             autoComplete="username"
+            aria-invalid={Boolean(errors.username)}
+            aria-describedby={errors.username ? "signup-username-error" : undefined}
           />
+          {errors.username && (
+            <p id="signup-username-error" className="mt-1 text-sm font-medium text-red-600">
+              {errors.username}
+            </p>
+          )}
         </div>
 
         <div>
@@ -84,10 +120,17 @@ export default function Signup() {
           <input
             type="password"
             value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            className="w-full rounded-md border border-gray-300 bg-white p-3 text-gray-900 focus:border-blue-500 focus:outline-none dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100"
+            onChange={(e) => updateField("password", e.target.value, setPassword)}
+            className={getInputClassName("password")}
             autoComplete="new-password"
+            aria-invalid={Boolean(errors.password)}
+            aria-describedby={errors.password ? "signup-password-error" : undefined}
           />
+          {errors.password && (
+            <p id="signup-password-error" className="mt-1 text-sm font-medium text-red-600">
+              {errors.password}
+            </p>
+          )}
         </div>
 
         <div>
@@ -97,10 +140,24 @@ export default function Signup() {
           <input
             type="password"
             value={confirmPassword}
-            onChange={(e) => setConfirmPassword(e.target.value)}
-            className="w-full rounded-md border border-gray-300 bg-white p-3 text-gray-900 focus:border-blue-500 focus:outline-none dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100"
+            onChange={(e) =>
+              updateField("confirmPassword", e.target.value, setConfirmPassword)
+            }
+            className={getInputClassName("confirmPassword")}
             autoComplete="new-password"
+            aria-invalid={Boolean(errors.confirmPassword)}
+            aria-describedby={
+              errors.confirmPassword ? "signup-confirm-password-error" : undefined
+            }
           />
+          {errors.confirmPassword && (
+            <p
+              id="signup-confirm-password-error"
+              className="mt-1 text-sm font-medium text-red-600"
+            >
+              {errors.confirmPassword}
+            </p>
+          )}
         </div>
 
         <button

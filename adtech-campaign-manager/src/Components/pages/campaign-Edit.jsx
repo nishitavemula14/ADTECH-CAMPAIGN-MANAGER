@@ -21,6 +21,7 @@ export default function EditCampaign() {
 
   const { currentUser } = useAuth();
   const { campaigns, updateCampaign } = useCampaigns();
+  const returnPath = currentUser?.role === "superadmin" ? "/super-admin" : "/campaigns";
 
   const campaign = campaigns.find(
     (item) => item.id === campaignId
@@ -87,7 +88,7 @@ export default function EditCampaign() {
     }
 
     if (!hasChanges) {
-      navigate("/campaigns");
+      navigate(returnPath);
       return;
     }
 
@@ -101,7 +102,7 @@ export default function EditCampaign() {
 
     toast.success("Campaign Updated Successfully!");
 
-    navigate("/campaigns");
+    navigate(returnPath);
   }
 
   return (
@@ -203,7 +204,7 @@ export default function EditCampaign() {
 
         <div>
           <label className="mb-2 block font-medium text-gray-900 dark:text-slate-100">
-            Budget (₹)
+            Budget ({"\u20B9"})
           </label>
 
           <input
@@ -245,7 +246,7 @@ export default function EditCampaign() {
 
         <div className="flex flex-col gap-3 sm:flex-row">
           <Link
-            to="/campaigns"
+            to={returnPath}
             className="flex w-full items-center justify-center rounded-lg border border-gray-300 py-3 text-gray-700 transition hover:bg-gray-100 dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-800 sm:w-1/2"
           >
             Cancel

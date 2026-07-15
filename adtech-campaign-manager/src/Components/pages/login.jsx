@@ -8,6 +8,26 @@ export default function Login() {
   const navigate = useNavigate();
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const [errors, setErrors] = useState({});
+
+  const inputClassName =
+    "w-full rounded-md border bg-white p-3 text-gray-900 focus:outline-none dark:bg-slate-950 dark:text-slate-100";
+
+  function getInputClassName(fieldName) {
+    return errors[fieldName]
+      ? `${inputClassName} border-red-500 focus:border-red-500 dark:border-red-500`
+      : `${inputClassName} border-gray-300 focus:border-blue-500 dark:border-slate-700`;
+  }
+
+  function updateUsername(value) {
+    setUsername(value);
+    setErrors((currentErrors) => ({ ...currentErrors, username: "" }));
+  }
+
+  function updatePassword(value) {
+    setPassword(value);
+    setErrors((currentErrors) => ({ ...currentErrors, password: "" }));
+  }
 
   function getRoleRedirect(role) {
     return ["admin", "superadmin"].includes(role) ? "/admin" : "/";
@@ -19,10 +39,26 @@ export default function Login() {
 
   function handleSubmit(e) {
     e.preventDefault();
+
+    const nextErrors = {};
+
+    if (username.trim() === "") {
+      nextErrors.username = "Username is required";
+    }
+
+    if (password === "") {
+      nextErrors.password = "Password is required";
+    }
+
+    if (Object.keys(nextErrors).length > 0) {
+      setErrors(nextErrors);
+      return;
+    }
+
     const result = login(username.trim(), password);
 
     if (!result.ok) {
-      toast.error("Invalid username or password");
+      setErrors({ password: "Invalid username or password" });
       return;
     }
 
@@ -52,11 +88,18 @@ export default function Login() {
           <input
             type="text"
             value={username}
-            onChange={(e) => setUsername(e.target.value)}
+            onChange={(e) => updateUsername(e.target.value)}
             placeholder="Enter username"
-            className="w-full rounded-md border border-gray-300 bg-white p-3 text-gray-900 focus:border-blue-500 focus:outline-none dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100"
+            className={getInputClassName("username")}
             autoComplete="username"
+            aria-invalid={Boolean(errors.username)}
+            aria-describedby={errors.username ? "login-username-error" : undefined}
           />
+          {errors.username && (
+            <p id="login-username-error" className="mt-1 text-sm font-medium text-red-600">
+              {errors.username}
+            </p>
+          )}
         </div>
 
         <div>
@@ -66,10 +109,17 @@ export default function Login() {
           <input
             type="password"
             value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            className="w-full rounded-md border border-gray-300 bg-white p-3 text-gray-900 focus:border-blue-500 focus:outline-none dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100"
+            onChange={(e) => updatePassword(e.target.value)}
+            className={getInputClassName("password")}
             autoComplete="current-password"
+            aria-invalid={Boolean(errors.password)}
+            aria-describedby={errors.password ? "login-password-error" : undefined}
           />
+          {errors.password && (
+            <p id="login-password-error" className="mt-1 text-sm font-medium text-red-600">
+              {errors.password}
+            </p>
+          )}
         </div>
 
         <button

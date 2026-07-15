@@ -4,7 +4,6 @@ import {
   ListChecks,
   LogOut,
   PlusCircle,
-  UserCog,
   Users,
 } from "lucide-react";
 import toast from "react-hot-toast";
@@ -141,6 +140,7 @@ export default function AppLayout() {
 
           <NavLink
             to="/campaigns"
+            end
             className={({ isActive }) =>
               `flex shrink-0 items-center justify-center gap-2 rounded-lg px-3 py-2 text-sm sm:gap-3 sm:text-base lg:justify-start ${
                 isActive
@@ -184,22 +184,6 @@ export default function AppLayout() {
             >
               <Users size={18} />
               {currentUser?.role === "superadmin" ? "Super Admin" : "Admin"}
-            </NavLink>
-          )}
-
-          {currentUser?.role === "superadmin" && (
-            <NavLink
-              to="/user-management"
-              className={({ isActive }) =>
-                `flex shrink-0 items-center justify-center gap-2 rounded-lg px-3 py-2 text-sm sm:gap-3 sm:text-base lg:justify-start ${
-                  isActive
-                    ? "bg-blue-600 text-white"
-                    : "text-gray-700 hover:bg-gray-100 dark:text-slate-300 dark:hover:bg-slate-800"
-                }`
-              }
-            >
-              <UserCog size={18} />
-              User Management
             </NavLink>
           )}
 

@@ -19,6 +19,14 @@ function isDefaultDemoCampaign(campaign) {
   );
 }
 
+function getNumericDisplayId(index) {
+  return String(index + 1);
+}
+
+function isNumericDisplayId(displayId) {
+  return /^\d+$/.test(String(displayId || ""));
+}
+
 function assignOwnerDisplayIds(campaigns) {
   const ownerCounters = {};
 
@@ -28,7 +36,7 @@ function assignOwnerDisplayIds(campaigns) {
 
     return {
       ...campaign,
-      displayId: ownerCounters[ownerKey].toString(),
+      displayId: getNumericDisplayId(ownerCounters[ownerKey] - 1),
     };
   });
 }
@@ -78,18 +86,15 @@ export function CampaignProvider({ children }) {
             ? newCampaign.ownerId
             : currentUserId,
         displayId: String(
-          Math.max(
-            0,
-            ...prevCampaigns
-              .filter(
-                (campaignItem) =>
-                  campaignItem.ownerId ===
-                  (canAssignCampaignOwner && newCampaign.ownerId
-                    ? newCampaign.ownerId
-                    : currentUserId)
-              )
-              .map((campaignItem) => Number(campaignItem.displayId) || 0)
-          ) + 1
+          getNumericDisplayId(
+            prevCampaigns.filter(
+              (campaignItem) =>
+                campaignItem.ownerId ===
+                (canAssignCampaignOwner && newCampaign.ownerId
+                  ? newCampaign.ownerId
+                  : currentUserId)
+            ).length
+          )
         ),
         status: newCampaign.status || "active",
         budget: Number(newCampaign.budget),
@@ -133,6 +138,20 @@ export function CampaignProvider({ children }) {
     );
   }
 
+  function deleteActiveCampaignsByOwner(ownerId) {
+    if (!isSuperAdmin) {
+      return;
+    }
+
+    setCampaigns((prevCampaigns) =>
+      prevCampaigns.filter(
+        (campaign) =>
+          campaign.ownerId !== ownerId ||
+          String(campaign.status).toLowerCase() !== "active"
+      )
+    );
+  }
+
   function toggleStatus(id) {
     setCampaigns((prevCampaigns) =>
       prevCampaigns.map((campaign) =>
@@ -156,7 +175,7 @@ export function CampaignProvider({ children }) {
   useEffect(() => {
     if (
       allCampaigns.length === 0 ||
-      allCampaigns.every((campaign) => campaign.displayId)
+      allCampaigns.every((campaign) => isNumericDisplayId(campaign.displayId))
     ) {
       return;
     }
@@ -200,6 +219,7 @@ export function CampaignProvider({ children }) {
         updateCampaign,
         deleteCampaign,
         deleteAllCampaigns,
+        deleteActiveCampaignsByOwner,
         toggleStatus,
         getCampaign,
       }}

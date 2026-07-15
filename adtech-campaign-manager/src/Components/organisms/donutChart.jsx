@@ -1,5 +1,7 @@
 import { useState } from "react";
 
+import { formatCurrency } from "../../lib/formatter.js";
+
 const GROUP_COLORS = {
   "Google Search": "royalblue",
   "Google Ads": "royalblue",
@@ -38,10 +40,6 @@ const DONUT_GRADIENTS = [
   ["tomato", "firebrick"],
   ["yellowgreen", "olivedrab"],
 ];
-
-function formatCurrency(value) {
-  return `\u20B9${Number(value).toLocaleString()}`;
-}
 
 function formatCompactCurrency(value) {
   const amount = Number(value);

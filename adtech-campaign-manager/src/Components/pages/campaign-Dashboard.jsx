@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { PlusCircle } from "lucide-react";
 
 import { useCampaigns } from "../../hooks/useCampaigns.js";
+import { formatCurrency } from "../../lib/formatter.js";
 
 import EmptyState from "../atoms/empty.jsx";
 import BarChart from "../organisms/barChart.jsx";
@@ -35,6 +36,7 @@ export default function Dashboard() {
     0
   );
   const topCampaigns = campaigns
+    .filter((campaign) => String(campaign.status).toLowerCase() === "active")
     .sort((a, b) => Number(b.budget) - Number(a.budget))
     .slice(0, 5);
   const groupedBudgets = {};
@@ -110,7 +112,7 @@ export default function Dashboard() {
           </p>
 
           <h2 className="mt-2 text-3xl font-bold">
-            ₹{totalBudget.toLocaleString()}
+            {formatCurrency(totalBudget)}
           </h2>
         </div>
       </div>
@@ -118,7 +120,7 @@ export default function Dashboard() {
       <div className="mt-6 grid min-h-0 flex-1 grid-cols-1 gap-6 lg:grid-cols-2">
         <div className="flex min-h-[420px] flex-col rounded-lg bg-white p-4 shadow dark:bg-slate-900 sm:p-5 lg:min-h-0">
           <h2 className="mb-6 shrink-0 text-xl font-semibold">
-            Top 5 Campaigns
+            Top 5 Active Campaigns
           </h2>
 
           {topCampaigns.length > 0 ? (
@@ -128,7 +130,7 @@ export default function Dashboard() {
           ) : (
             <EmptyState
               title="No Campaigns"
-              message="Campaigns will appear here."
+              message="Active campaigns will appear here."
               className="border-0 bg-transparent p-6 text-gray-400 dark:bg-transparent dark:text-slate-500"
             />
           )}

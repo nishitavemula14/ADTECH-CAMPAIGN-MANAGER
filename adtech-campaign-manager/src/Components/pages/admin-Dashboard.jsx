@@ -1,9 +1,11 @@
 import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { PlusCircle, Search } from "lucide-react";
+import toast from "react-hot-toast";
 
 import { useAuth } from "../../auth/useAuth.js";
 import { useCampaigns } from "../../hooks/useCampaigns.js";
+import { formatCurrency } from "../../lib/formatter.js";
 import EmptyState from "../atoms/empty.jsx";
 import StatCard from "../atoms/statCard.jsx";
 import AdminCampaignCard from "../molecules/adminCampaignCard.jsx";
@@ -13,13 +15,14 @@ import AdminUsersTable from "../organisms/adminUsersTable.jsx";
 import BarChart from "../organisms/barChart.jsx";
 import BudgetDonutChart from "../organisms/donutChart.jsx";
 
-function formatCurrency(value) {
-  return `\u20B9${Number(value).toLocaleString()}`;
-}
-
 export default function AdminDashboard({ showAnalytics = true }) {
-  const { users, currentUser } = useAuth();
-  const { campaigns, allCampaigns } = useCampaigns();
+  const { users, currentUser, changeUserRole, deleteUser } = useAuth();
+  const {
+    allCampaigns,
+    deleteCampaign,
+    deleteActiveCampaignsByOwner,
+    updateCampaign,
+  } = useCampaigns();
   const [search, setSearch] = useState("");
   const [selectedUserId, setSelectedUserId] = useState(null);
   const [selectedStatus, setSelectedStatus] = useState("active");
@@ -82,17 +85,18 @@ export default function AdminDashboard({ showAnalytics = true }) {
     return matchesUser && matchesSearch;
   });
 
-  const totalBudget = allCampaigns.reduce(
+  const analyticsCampaigns = allCampaigns;
+  const totalBudget = analyticsCampaigns.reduce(
     (sum, campaign) => sum + Number(campaign.budget || 0),
     0
   );
-  const activeCampaigns = allCampaigns.filter(
+  const activeCampaigns = analyticsCampaigns.filter(
     (campaign) => String(campaign.status).toLowerCase() === "active"
   ).length;
-  const analyticsCampaigns = isSuperAdmin ? allCampaigns : campaigns;
   const showDashboardAnalytics =
     showAnalytics && ["admin", "superadmin"].includes(currentUser?.role);
-  const topCampaigns = [...analyticsCampaigns]
+  const topCampaigns = analyticsCampaigns
+    .filter((campaign) => String(campaign.status).toLowerCase() === "active")
     .sort((a, b) => Number(b.budget || 0) - Number(a.budget || 0))
     .slice(0, 5);
   const filteredStatusCampaigns = analyticsCampaigns.filter(
@@ -120,6 +124,167 @@ export default function AdminDashboard({ showAnalytics = true }) {
     0
   );
 
+  function handleRoleChange(userId, role) {
+    const result = changeUserRole(userId, role);
+
+    if (!result.ok) {
+      toast.error(result.message);
+      return;
+    }
+
+    toast.success(role === "admin" ? "User promoted to admin" : "Admin demoted to user");
+  }
+
+  function handleDeleteUser(userId) {
+    const user = userById[userId];
+    const activeCampaignCount = allCampaigns.filter(
+      (campaign) =>
+        campaign.ownerId === userId &&
+        String(campaign.status).toLowerCase() === "active"
+    ).length;
+    const result = deleteUser(userId);
+
+    if (!result.ok) {
+      toast.error(result.message);
+      return;
+    }
+
+    deleteActiveCampaignsByOwner(userId);
+
+    if (selectedUserId === userId) {
+      setSelectedUserId(null);
+      setSearch("");
+    }
+
+    toast.success(
+      `${user?.username || "User"} deleted. ${activeCampaignCount} active campaign${
+        activeCampaignCount === 1 ? "" : "s"
+      } deleted.`
+    );
+  }
+
+  function confirmDeleteUser(userId) {
+    const user = userById[userId];
+
+    toast.custom(
+      (toastItem) => (
+        <div
+          className="pointer-events-auto w-80 max-w-[calc(100vw-2rem)] rounded-lg bg-white p-4 shadow-xl dark:bg-slate-900"
+          onClick={(event) => event.stopPropagation()}
+        >
+          <p className="font-bold text-gray-900 dark:text-slate-100">
+            Should I delete {user?.username || "this user"} permanently?
+          </p>
+          <p className="mt-2 break-words text-sm text-gray-600 dark:text-slate-300">
+            This user will be removed from the super admin list.
+          </p>
+
+          <div className="mt-4 flex justify-end gap-2">
+            <button
+              type="button"
+              onClick={(event) => {
+                event.preventDefault();
+                event.stopPropagation();
+                toast.dismiss(toastItem.id);
+              }}
+              className="rounded-lg border border-gray-300 px-3 py-2 text-sm font-semibold text-gray-700 transition hover:bg-gray-100 dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-800"
+            >
+              Cancel
+            </button>
+            <button
+              type="button"
+              onClick={(event) => {
+                event.preventDefault();
+                event.stopPropagation();
+                toast.dismiss(toastItem.id);
+                handleDeleteUser(userId);
+              }}
+              className="rounded-lg bg-red-600 px-3 py-2 text-sm font-semibold text-white transition hover:bg-red-700"
+            >
+              Delete
+            </button>
+          </div>
+        </div>
+      ),
+      {
+        duration: Infinity,
+        position: "top-center",
+        style: {
+          left: "50%",
+          margin: 0,
+          position: "fixed",
+          top: "50%",
+          transform: "translate(-50%, -50%)",
+        },
+      }
+    );
+  }
+
+  function handleDeleteCampaign(campaign) {
+    deleteCampaign(campaign.id);
+    toast.success(`${campaign.name} deleted successfully`);
+  }
+
+  function confirmDeleteCampaign(campaign) {
+    toast.custom(
+      (toastItem) => (
+        <div
+          className="pointer-events-auto w-80 max-w-[calc(100vw-2rem)] rounded-lg bg-white p-4 shadow-xl dark:bg-slate-900"
+          onClick={(event) => event.stopPropagation()}
+        >
+          <p className="font-bold text-gray-900 dark:text-slate-100">
+            Should I delete {campaign.name} permanently?
+          </p>
+          <p className="mt-2 break-words text-sm text-gray-600 dark:text-slate-300">
+            This campaign will be removed from this user&apos;s campaign list.
+          </p>
+
+          <div className="mt-4 flex justify-end gap-2">
+            <button
+              type="button"
+              onClick={(event) => {
+                event.preventDefault();
+                event.stopPropagation();
+                toast.dismiss(toastItem.id);
+              }}
+              className="rounded-lg border border-gray-300 px-3 py-2 text-sm font-semibold text-gray-700 transition hover:bg-gray-100 dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-800"
+            >
+              Cancel
+            </button>
+            <button
+              type="button"
+              onClick={(event) => {
+                event.preventDefault();
+                event.stopPropagation();
+                toast.dismiss(toastItem.id);
+                handleDeleteCampaign(campaign);
+              }}
+              className="rounded-lg bg-red-600 px-3 py-2 text-sm font-semibold text-white transition hover:bg-red-700"
+            >
+              Delete
+            </button>
+          </div>
+        </div>
+      ),
+      {
+        duration: Infinity,
+        position: "top-center",
+        style: {
+          left: "50%",
+          margin: 0,
+          position: "fixed",
+          top: "50%",
+          transform: "translate(-50%, -50%)",
+        },
+      }
+    );
+  }
+
+  function handleCampaignStatusChange(campaignId, status) {
+    updateCampaign(campaignId, { status });
+    toast.success("Campaign status updated");
+  }
+
   return (
     <div className="mx-auto flex min-h-full max-w-7xl flex-col p-3 sm:p-4 lg:p-6">
       <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
@@ -145,7 +310,7 @@ export default function AdminDashboard({ showAnalytics = true }) {
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <StatCard label="Total Users" value={regularUsers.length} />
-        <StatCard label="Total Campaigns" value={allCampaigns.length} />
+        <StatCard label="Total Campaigns" value={analyticsCampaigns.length} />
         <StatCard label="Active Campaigns" value={activeCampaigns} />
         <StatCard label="Total Budget" value={formatCurrency(totalBudget)} />
       </div>
@@ -154,7 +319,7 @@ export default function AdminDashboard({ showAnalytics = true }) {
         <section className="mt-6 grid min-h-0 grid-cols-1 gap-6 lg:grid-cols-2">
           <div className="flex min-h-[420px] flex-col rounded-lg bg-white p-4 shadow dark:bg-slate-900 sm:p-5">
             <h2 className="mb-6 shrink-0 text-xl font-semibold">
-              Top 5 Campaigns
+              Top 5 Active Campaigns
             </h2>
 
             {topCampaigns.length > 0 ? (
@@ -164,7 +329,7 @@ export default function AdminDashboard({ showAnalytics = true }) {
             ) : (
               <EmptyState
                 title="No Campaigns"
-                message="Top campaigns will appear here after campaigns are created."
+                message="Top active campaigns will appear here after active campaigns are created."
                 className="border-0 bg-transparent p-6 text-gray-400 dark:bg-transparent dark:text-slate-500"
               />
             )}
@@ -253,9 +418,10 @@ export default function AdminDashboard({ showAnalytics = true }) {
                 <AdminUserCard
                   key={user.id}
                   user={user}
-                  isSuperAdmin={false}
-                  formatCurrency={formatCurrency}
+                  isSuperAdmin={isSuperAdmin}
                   onSelectUser={setSelectedUserId}
+                  onRoleChange={handleRoleChange}
+                  onDeleteUser={confirmDeleteUser}
                 />
               ))}
             </div>
@@ -264,9 +430,10 @@ export default function AdminDashboard({ showAnalytics = true }) {
           {!selectedUser && (
             <AdminUsersTable
               users={userSummaries}
-              isSuperAdmin={false}
-              formatCurrency={formatCurrency}
+              isSuperAdmin={isSuperAdmin}
               onSelectUser={setSelectedUserId}
+              onRoleChange={handleRoleChange}
+              onDeleteUser={confirmDeleteUser}
             />
           )}
 
@@ -287,6 +454,9 @@ export default function AdminDashboard({ showAnalytics = true }) {
                     key={campaign.id}
                     campaign={campaign}
                     formatCurrency={formatCurrency}
+                    canManage={isSuperAdmin}
+                    onDeleteCampaign={confirmDeleteCampaign}
+                    onStatusChange={handleCampaignStatusChange}
                   />
                 ))}
               </div>
@@ -294,6 +464,9 @@ export default function AdminDashboard({ showAnalytics = true }) {
               <AdminCampaignsTable
                 campaigns={filteredCampaigns}
                 formatCurrency={formatCurrency}
+                canManage={isSuperAdmin}
+                onDeleteCampaign={confirmDeleteCampaign}
+                onStatusChange={handleCampaignStatusChange}
               />
             </div>
           )}

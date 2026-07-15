@@ -4,6 +4,7 @@ import { Edit, Trash2 } from "lucide-react";
 import toast from "react-hot-toast";
 import { useAuth } from "../../auth/useAuth.js";
 import { useCampaigns } from "../../hooks/useCampaigns.js";
+import { formatCurrency } from "../../lib/formatter.js";
 import EmptyState from "../atoms/empty.jsx";
 
 const STATUS_STYLES = {
@@ -26,9 +27,11 @@ const STATUS_FILTER_OPTIONS = [
   { label: "Completed", value: "completed" },
 ];
 
-function formatCurrency(value) {
-  return `\u20B9${Number(value).toLocaleString()}`;
-}
+const STATUS_SORT_ORDER = {
+  active: 0,
+  paused: 1,
+  completed: 2,
+};
 
 export default function CampaignList() {
   const { currentUser } = useAuth();
@@ -38,6 +41,9 @@ export default function CampaignList() {
   const [statusFilter, setStatusFilter] = useState("all");
   const [campaignToDelete, setCampaignToDelete] = useState(null);
   const isSuperAdmin = currentUser?.role === "superadmin";
+  const usesSerialCampaignIds = ["admin", "superadmin"].includes(
+    currentUser?.role
+  );
 
   function canManageCampaign(campaign) {
     return isSuperAdmin || campaign.ownerId === currentUser?.id;
@@ -45,6 +51,18 @@ export default function CampaignList() {
 
   function confirmDeleteCampaign(campaign) {
     setCampaignToDelete(campaign);
+  }
+
+  function getCampaignListId(campaign, index) {
+    return usesSerialCampaignIds ? index + 1 : campaign.displayId || campaign.id;
+  }
+
+  function getCampaignSearchId(campaign) {
+    return usesSerialCampaignIds ? campaign.id : campaign.displayId || campaign.id;
+  }
+
+  function getCampaignOrder(campaign) {
+    return Number(campaign.displayId || campaign.id) || Number.MAX_SAFE_INTEGER;
   }
 
   function confirmDeleteAllCampaigns() {
@@ -118,21 +136,39 @@ export default function CampaignList() {
     ]),
   ];
 
-  const filteredCampaigns = campaigns.filter((campaign) => {
-    const searchTerm = search.toLowerCase().trim();
-    const matchesSearch =
-      campaign.name.toLowerCase().includes(searchTerm) ||
-      String(campaign.displayId || campaign.id)
-        .toLowerCase()
-        .includes(searchTerm);
-    const matchesPlatform =
-      platformFilter === "all" || campaign.platform === platformFilter;
-    const matchesStatus =
-      statusFilter === "all" ||
-      String(campaign.status).toLowerCase() === statusFilter;
+  const filteredCampaigns = campaigns
+    .filter((campaign) => {
+      const searchTerm = search.toLowerCase().trim();
+      const matchesSearch =
+        campaign.name.toLowerCase().includes(searchTerm) ||
+        String(getCampaignSearchId(campaign))
+          .toLowerCase()
+          .includes(searchTerm);
+      const matchesPlatform =
+        platformFilter === "all" || campaign.platform === platformFilter;
+      const matchesStatus =
+        statusFilter === "all" ||
+        String(campaign.status).toLowerCase() === statusFilter;
 
-    return matchesSearch && matchesPlatform && matchesStatus;
-  });
+      return matchesSearch && matchesPlatform && matchesStatus;
+    })
+    .sort((firstCampaign, secondCampaign) => {
+      const firstOrder = getCampaignOrder(firstCampaign);
+      const secondOrder = getCampaignOrder(secondCampaign);
+
+      if (!usesSerialCampaignIds) {
+        return firstOrder - secondOrder;
+      }
+
+      const firstStatus = String(firstCampaign.status).toLowerCase();
+      const secondStatus = String(secondCampaign.status).toLowerCase();
+
+      const statusOrder =
+        (STATUS_SORT_ORDER[firstStatus] ?? 99) -
+        (STATUS_SORT_ORDER[secondStatus] ?? 99);
+
+      return statusOrder || firstOrder - secondOrder;
+    });
   const canBulkDelete = filteredCampaigns.some(canManageCampaign);
 
   return (
@@ -219,7 +255,7 @@ export default function CampaignList() {
       ) : (
         <div className="flex-1 lg:min-h-0">
           <div className="grid gap-3 md:hidden">
-            {filteredCampaigns.map((campaign) => {
+            {filteredCampaigns.map((campaign, index) => {
               const status = String(campaign.status).toLowerCase();
 
               return (
@@ -230,7 +266,7 @@ export default function CampaignList() {
                   <div className="flex items-start justify-between gap-3">
                     <div className="min-w-0">
                       <p className="text-xs font-semibold uppercase text-gray-500 dark:text-slate-400">
-                        ID {campaign.displayId || campaign.id}
+                        ID {getCampaignListId(campaign, index)}
                       </p>
                       <Link
                         to={`/campaigns/${campaign.id}`}
@@ -331,14 +367,14 @@ export default function CampaignList() {
                 <th className="p-4 text-left">Campaign</th>
                 <th className="p-4 text-left">Platform</th>
                 <th className="p-4 text-left">Audience</th>
-                <th className="p-4 text-right">Budget (₹)</th>
+                <th className="p-4 text-right">Budget ({"\u20B9"})</th>
                 <th className="p-4 text-center">Status</th>
                 <th className="p-4 text-center">Actions</th>
               </tr>
             </thead>
 
             <tbody>
-              {filteredCampaigns.map((campaign) => {
+              {filteredCampaigns.map((campaign, index) => {
                 const status = String(campaign.status).toLowerCase();
 
                 return (
@@ -347,7 +383,7 @@ export default function CampaignList() {
                     className="border-t border-gray-100 hover:bg-gray-50 dark:border-slate-800 dark:hover:bg-slate-800/70"
                   >
                     <td className="p-4 font-semibold text-gray-500 dark:text-slate-400">
-                      {campaign.displayId || campaign.id}
+                      {getCampaignListId(campaign, index)}
                     </td>
 
                     <td className="max-w-72 p-4 align-top font-medium">

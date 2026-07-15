@@ -2,16 +2,13 @@ import { Link, Navigate, useParams } from "react-router-dom";
 import { ArrowLeft, Edit } from "lucide-react";
 import { useAuth } from "../../auth/useAuth.js";
 import { useCampaigns } from "../../hooks/useCampaigns.js";
+import { formatCurrency } from "../../lib/formatter.js";
 
 const STATUS_STYLES = {
   active: "bg-green-100 text-green-700",
   paused: "bg-yellow-100 text-yellow-700",
   completed: "bg-blue-100 text-blue-700",
 };
-
-function formatCurrency(value) {
-  return `\u20B9${Number(value).toLocaleString()}`;
-}
 
 function formatStatus(status) {
   const normalizedStatus = String(status).toLowerCase();

@@ -1,5 +1,7 @@
 import { useState } from "react";
 
+import { formatCurrency } from "../../lib/formatter.js";
+
 const BAR_COLORS = [
   "from-blue-500 to-cyan-400",
   "from-rose-500 to-pink-400",
@@ -7,10 +9,6 @@ const BAR_COLORS = [
   "from-amber-500 to-orange-400",
   "from-violet-500 to-indigo-400",
 ];
-
-function formatCurrency(value) {
-  return `\u20B9${Number(value).toLocaleString()}`;
-}
 
 export default function BarChart({ data }) {
   const [hoveredCampaign, setHoveredCampaign] = useState(null);

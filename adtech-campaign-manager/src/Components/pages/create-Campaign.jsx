@@ -199,7 +199,7 @@ export default function CreateCampaign() {
         </div>
         <div>
           <label className="mb-2 block font-medium text-gray-900 dark:text-slate-100">
-            Budget (₹)
+            Budget ({"\u20B9"})
           </label>
 
           <input

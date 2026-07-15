@@ -1,6 +1,17 @@
+import { Link } from "react-router-dom";
+import { Edit, Trash2 } from "lucide-react";
+
 import StatusBadge from "../atoms/statusBadge.jsx";
 
-export default function AdminCampaignCard({ campaign, formatCurrency }) {
+export default function AdminCampaignCard({
+  campaign,
+  formatCurrency,
+  canManage = false,
+  onDeleteCampaign,
+  onStatusChange,
+}) {
+  const status = String(campaign.status).toLowerCase();
+
   return (
     <article className="rounded-lg bg-white p-4 shadow dark:bg-slate-900">
       <div className="flex items-start justify-between gap-3">
@@ -12,7 +23,19 @@ export default function AdminCampaignCard({ campaign, formatCurrency }) {
             {campaign.name}
           </h3>
         </div>
-        <StatusBadge status={campaign.status} className="shrink-0" />
+        {canManage ? (
+          <select
+            value={status}
+            onChange={(event) => onStatusChange(campaign.id, event.target.value)}
+            className="shrink-0 rounded-full border border-gray-300 bg-white px-3 py-1 text-sm font-semibold capitalize text-gray-900 outline-none dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100"
+          >
+            <option value="active">Active</option>
+            <option value="paused">Paused</option>
+            <option value="completed">Completed</option>
+          </select>
+        ) : (
+          <StatusBadge status={campaign.status} className="shrink-0" />
+        )}
       </div>
 
       <dl className="mt-4 grid grid-cols-2 gap-3 text-sm">
@@ -30,15 +53,35 @@ export default function AdminCampaignCard({ campaign, formatCurrency }) {
             {formatCurrency(campaign.budget)}
           </dd>
         </div>
-        <div>
-          <dt className="text-gray-500 dark:text-slate-400">Created</dt>
-          <dd className="mt-1 font-semibold">
-            {campaign.createdAt
-              ? new Date(campaign.createdAt).toLocaleDateString()
-              : "Not available"}
-          </dd>
-        </div>
       </dl>
+
+      <div className="mt-4 flex justify-end gap-2">
+        {canManage ? (
+          <>
+          <Link
+            to={`/campaigns/${campaign.id}/edit`}
+            className="rounded-lg p-2 text-green-600 transition hover:bg-green-50"
+            title="Edit campaign"
+            aria-label="Edit campaign"
+          >
+            <Edit size={18} />
+          </Link>
+          <button
+            type="button"
+            onClick={() => onDeleteCampaign(campaign)}
+            className="rounded-lg p-2 text-red-600 transition hover:bg-red-50"
+            title="Delete campaign"
+            aria-label="Delete campaign"
+          >
+            <Trash2 size={18} />
+          </button>
+          </>
+        ) : (
+          <span className="rounded-lg bg-gray-50 px-3 py-2 text-sm font-semibold text-gray-400 dark:bg-slate-800">
+            Read only
+          </span>
+        )}
+      </div>
     </article>
   );
 }

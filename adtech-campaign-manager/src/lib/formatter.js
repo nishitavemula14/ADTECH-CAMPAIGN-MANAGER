@@ -1,3 +1,3 @@
 export function formatCurrency(value) {
-  return `₹${Number(value).toLocaleString()}`;
+  return `\u20B9${Number(value || 0).toLocaleString()}`;
 }
