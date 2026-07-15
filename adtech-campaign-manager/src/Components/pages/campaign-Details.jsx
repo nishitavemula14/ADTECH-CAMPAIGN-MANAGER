@@ -3,6 +3,7 @@ import { ArrowLeft, Edit } from "lucide-react";
 import { useAuth } from "../../auth/useAuth.js";
 import { useCampaigns } from "../../hooks/useCampaigns.js";
 import { formatCurrency } from "../../lib/formatter.js";
+import { getUserLabel } from "../../lib/userDisplay.js";
 
 const STATUS_STYLES = {
   active: "bg-green-100 text-green-700",
@@ -82,7 +83,7 @@ export default function CampaignDetail() {
             <div>
               <p className="text-sm font-semibold text-gray-500 dark:text-slate-400">Created By</p>
               <p className="mt-1 text-lg font-bold text-gray-900 dark:text-slate-100">
-                {owner?.username || "Unknown user"}
+                {getUserLabel(owner)}
               </p>
             </div>
           )}

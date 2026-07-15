@@ -6,7 +6,7 @@ import { useAuth } from "../../auth/useAuth.js";
 export default function Signup() {
   const { isAuthenticated, signup } = useAuth();
   const navigate = useNavigate();
-  const [username, setUsername] = useState("");
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [errors, setErrors] = useState({});
@@ -34,8 +34,8 @@ export default function Signup() {
 
     const nextErrors = {};
 
-    if (username.trim() === "") {
-      nextErrors.username = "Username is required";
+    if (email.trim() === "") {
+      nextErrors.email = "Email is required";
     }
 
     if (password === "") {
@@ -51,11 +51,6 @@ export default function Signup() {
       return;
     }
 
-    if (username.trim().includes("@")) {
-      setErrors({ username: "Use a username, not an email address" });
-      return;
-    }
-
     if (password.length < 6) {
       setErrors({ password: "Password must be at least 6 characters" });
       return;
@@ -66,10 +61,10 @@ export default function Signup() {
       return;
     }
 
-    const result = signup(username, password);
+    const result = signup(email, password);
 
     if (!result.ok) {
-      setErrors({ username: result.message || "Unable to create account" });
+      setErrors({ email: result.message || "Unable to create account" });
       return;
     }
 
@@ -88,27 +83,27 @@ export default function Signup() {
             AdTech Campaign Manager
           </p>
           <h1 className="mt-1 text-xl font-bold sm:text-2xl">
-            Sign Up
+            Sign up
           </h1>
         </div>
 
         <div>
           <label className="mb-2 block font-medium text-gray-900 dark:text-slate-100">
-            Username
+            Email
           </label>
           <input
-            type="text"
-            value={username}
-            onChange={(e) => updateField("username", e.target.value, setUsername)}
-            placeholder="Choose a username"
-            className={getInputClassName("username")}
-            autoComplete="username"
-            aria-invalid={Boolean(errors.username)}
-            aria-describedby={errors.username ? "signup-username-error" : undefined}
+            type="email"
+            value={email}
+            onChange={(e) => updateField("email", e.target.value, setEmail)}
+            placeholder="Enter email"
+            className={getInputClassName("email")}
+            autoComplete="email"
+            aria-invalid={Boolean(errors.email)}
+            aria-describedby={errors.email ? "signup-email-error" : undefined}
           />
-          {errors.username && (
-            <p id="signup-username-error" className="mt-1 text-sm font-medium text-red-600">
-              {errors.username}
+          {errors.email && (
+            <p id="signup-email-error" className="mt-1 text-sm font-medium text-red-600">
+              {errors.email}
             </p>
           )}
         </div>

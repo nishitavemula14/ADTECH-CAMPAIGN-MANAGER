@@ -6,7 +6,7 @@ import { useAuth } from "../../auth/useAuth.js";
 export default function Login() {
   const { currentUser, isAuthenticated, login } = useAuth();
   const navigate = useNavigate();
-  const [username, setUsername] = useState("");
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [errors, setErrors] = useState({});
 
@@ -19,9 +19,9 @@ export default function Login() {
       : `${inputClassName} border-gray-300 focus:border-blue-500 dark:border-slate-700`;
   }
 
-  function updateUsername(value) {
-    setUsername(value);
-    setErrors((currentErrors) => ({ ...currentErrors, username: "" }));
+  function updateEmail(value) {
+    setEmail(value);
+    setErrors((currentErrors) => ({ ...currentErrors, email: "" }));
   }
 
   function updatePassword(value) {
@@ -42,8 +42,8 @@ export default function Login() {
 
     const nextErrors = {};
 
-    if (username.trim() === "") {
-      nextErrors.username = "Username is required";
+    if (email.trim() === "") {
+      nextErrors.email = "Email is required";
     }
 
     if (password === "") {
@@ -55,10 +55,10 @@ export default function Login() {
       return;
     }
 
-    const result = login(username.trim(), password);
+    const result = login(email.trim(), password);
 
     if (!result.ok) {
-      setErrors({ password: "Invalid username or password" });
+      setErrors({ password: result.message || "Invalid email or password" });
       return;
     }
 
@@ -77,27 +77,27 @@ export default function Login() {
             AdTech Campaign Manager
           </p>
           <h1 className="mt-1 text-xl font-bold sm:text-2xl">
-            Login
+            Log in
           </h1>
         </div>
 
         <div>
           <label className="mb-2 block font-medium text-gray-900 dark:text-slate-100">
-            Username
+            Email
           </label>
           <input
-            type="text"
-            value={username}
-            onChange={(e) => updateUsername(e.target.value)}
-            placeholder="Enter username"
-            className={getInputClassName("username")}
-            autoComplete="username"
-            aria-invalid={Boolean(errors.username)}
-            aria-describedby={errors.username ? "login-username-error" : undefined}
+            type="email"
+            value={email}
+            onChange={(e) => updateEmail(e.target.value)}
+            placeholder="Enter email"
+            className={getInputClassName("email")}
+            autoComplete="email"
+            aria-invalid={Boolean(errors.email)}
+            aria-describedby={errors.email ? "login-email-error" : undefined}
           />
-          {errors.username && (
-            <p id="login-username-error" className="mt-1 text-sm font-medium text-red-600">
-              {errors.username}
+          {errors.email && (
+            <p id="login-email-error" className="mt-1 text-sm font-medium text-red-600">
+              {errors.email}
             </p>
           )}
         </div>
@@ -126,7 +126,7 @@ export default function Login() {
           type="submit"
           className="w-full rounded-lg bg-blue-600 py-3 font-semibold text-white transition hover:bg-blue-700"
         >
-          Login
+          Log in
         </button>
 
         <p className="text-center text-sm text-gray-500 dark:text-slate-400">

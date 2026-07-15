@@ -6,6 +6,7 @@ import toast from "react-hot-toast";
 import { useAuth } from "../../auth/useAuth.js";
 import { useCampaigns } from "../../hooks/useCampaigns.js";
 import { formatCurrency } from "../../lib/formatter.js";
+import { getUserLabel } from "../../lib/userDisplay.js";
 import EmptyState from "../atoms/empty.jsx";
 import StatCard from "../atoms/statCard.jsx";
 import AdminCampaignCard from "../molecules/adminCampaignCard.jsx";
@@ -68,6 +69,7 @@ export default function AdminDashboard({ showAnalytics = true }) {
   );
 
   const selectedUser = selectedUserId ? userById[selectedUserId] : null;
+  const selectedUserLabel = getUserLabel(selectedUser);
 
   const filteredCampaigns = allCampaigns.filter((campaign) => {
     const searchTerm = search.toLowerCase().trim();
@@ -80,7 +82,7 @@ export default function AdminDashboard({ showAnalytics = true }) {
       String(campaign.displayId || campaign.id)
         .toLowerCase()
         .includes(searchTerm) ||
-      owner?.username.toLowerCase().includes(searchTerm);
+      getUserLabel(owner).toLowerCase().includes(searchTerm);
 
     return matchesUser && matchesSearch;
   });
@@ -157,7 +159,7 @@ export default function AdminDashboard({ showAnalytics = true }) {
     }
 
     toast.success(
-      `${user?.username || "User"} deleted. ${activeCampaignCount} active campaign${
+      `${getUserLabel(user)} deleted. ${activeCampaignCount} active campaign${
         activeCampaignCount === 1 ? "" : "s"
       } deleted.`
     );
@@ -173,7 +175,7 @@ export default function AdminDashboard({ showAnalytics = true }) {
           onClick={(event) => event.stopPropagation()}
         >
           <p className="font-bold text-gray-900 dark:text-slate-100">
-            Should I delete {user?.username || "this user"} permanently?
+            Should I delete {getUserLabel(user)} permanently?
           </p>
           <p className="mt-2 break-words text-sm text-gray-600 dark:text-slate-300">
             This user will be removed from the super admin list.
@@ -379,7 +381,7 @@ export default function AdminDashboard({ showAnalytics = true }) {
           <div className="mb-3 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <h2 className="text-xl font-semibold">
-                {selectedUser ? `${selectedUser.username} Campaigns` : "Users"}
+                {selectedUser ? `${selectedUserLabel} Campaigns` : "Users"}
               </h2>
               {selectedUser && (
                 <button
@@ -442,8 +444,8 @@ export default function AdminDashboard({ showAnalytics = true }) {
               title="No Campaigns Found"
               message={
                 search.trim()
-                  ? `No campaigns match your search for ${selectedUser.username}.`
-                  : `${selectedUser.username} has not created any campaigns yet.`
+                  ? `No campaigns match your search for ${selectedUserLabel}.`
+                  : `${selectedUserLabel} has not created any campaigns yet.`
               }
             />
           ) : (

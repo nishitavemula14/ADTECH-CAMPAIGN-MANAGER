@@ -18,7 +18,13 @@ ReactDOM.createRoot(document.getElementById("root")).render(
           <Toaster
             position="top-right"
             toastOptions={{
-              duration: 2500,
+              duration: 800,
+              success: {
+                duration: 800,
+              },
+              error: {
+                duration: 1200,
+              },
               style: {
                 borderRadius: "8px",
                 fontWeight: "600",
@@ -30,9 +36,6 @@ ReactDOM.createRoot(document.getElementById("root")).render(
     </BrowserRouter>
   </React.StrictMode>
 );
-
-
-
 
 
 

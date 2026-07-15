@@ -1,4 +1,5 @@
 import { Trash2 } from "lucide-react";
+import { getUserLabel } from "../../lib/userDisplay.js";
 
 export default function AdminUsersTable({
   users,
@@ -13,7 +14,8 @@ export default function AdminUsersTable({
         <thead className="bg-gray-100 dark:bg-slate-800">
           <tr>
             <th className="p-4 text-left">ID</th>
-            <th className="p-4 text-left">Username</th>
+            <th className="p-4 text-left">User</th>
+            <th className="p-4 text-left">Email</th>
             <th className="p-4 text-left">Role</th>
             <th className="p-4 text-right">Campaigns</th>
             <th className="p-4 text-center">Actions</th>
@@ -23,6 +25,7 @@ export default function AdminUsersTable({
         <tbody>
           {users.map((user) => {
             const nextRole = user.role === "admin" ? "user" : "admin";
+            const userLabel = getUserLabel(user);
 
             return (
               <tr
@@ -38,8 +41,11 @@ export default function AdminUsersTable({
                     onClick={() => onSelectUser(user.id)}
                     className="font-semibold text-blue-600 hover:underline"
                   >
-                    {user.username}
+                    {userLabel}
                   </button>
+                </td>
+                <td className="p-4 text-sm font-medium text-gray-600 dark:text-slate-300">
+                  {user.username}
                 </td>
                 <td className="p-4 capitalize">{user.role}</td>
                 <td className="p-4 text-right font-semibold">

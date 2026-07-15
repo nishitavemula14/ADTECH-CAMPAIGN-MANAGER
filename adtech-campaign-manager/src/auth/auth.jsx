@@ -11,7 +11,13 @@ const LEGACY_DEFAULT_USER_IDENTIFIERS = [
   "user1",
   "user-2",
   "user2",
+  "superadmin",
 ];
+const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+function isValidEmail(email) {
+  return EMAIL_PATTERN.test(email);
+}
 
 function normalizeUserRole(user) {
   if (["user", "admin", "superadmin"].includes(user.role)) {
@@ -29,14 +35,9 @@ function isLegacyDefaultUser(user) {
     LEGACY_DEFAULT_USER_IDENTIFIERS.includes(user.username.toLowerCase());
 }
 
-function isLegacyEmailAdminUser(user) {
-  const username = user.username.toLowerCase();
-  return user.role === "admin" && username.includes("@");
-}
-
 function reconcileDefaultUsers(users) {
   const userManagedUsers = users.filter(
-    (user) => !isLegacyDefaultUser(user) && !isLegacyEmailAdminUser(user)
+    (user) => !isLegacyDefaultUser(user)
   );
 
   return DEFAULT_USERS.reduce((resolvedUsers, defaultUser) => {
@@ -101,6 +102,10 @@ export function AuthProvider({ children }) {
     CURRENT_USER_STORAGE_KEY,
     null
   );
+  const displayUsers = addUserDisplayIds(users);
+  const displayCurrentUser = currentUser
+    ? displayUsers.find((user) => user.id === currentUser.id) || currentUser
+    : null;
 
   useEffect(() => {
     setUsers((latestUsers) => {
@@ -128,18 +133,22 @@ export function AuthProvider({ children }) {
     }
   }, [currentUser, setCurrentUser, users]);
 
-  function login(username, password) {
-    const normalizedUsername = username.trim().toLowerCase();
+  function login(email, password) {
+    const normalizedEmail = email.trim().toLowerCase();
+
+    if (!isValidEmail(normalizedEmail)) {
+      return { ok: false, message: "Enter a valid email address" };
+    }
 
     const latestUsers = readStoredUsers();
     const user = latestUsers.find(
       (item) =>
-        item.username.toLowerCase() === normalizedUsername &&
+        item.username.toLowerCase() === normalizedEmail &&
         item.password === password
     );
 
     if (!user) {
-      return { ok: false };
+      return { ok: false, message: "Invalid email or password" };
     }
 
     setCurrentUser(normalizeUserRole(user));
@@ -149,24 +158,31 @@ export function AuthProvider({ children }) {
     };
   }
 
-  function signup(username, password) {
-    const normalizedUsername = username.trim();
+  function signup(email, password) {
+    const normalizedEmail = email.trim().toLowerCase();
 
-    const latestUsers = readStoredUsers();
-    const usernameExists = latestUsers.some(
-      (user) => user.username.toLowerCase() === normalizedUsername.toLowerCase()
-    );
-
-    if (usernameExists) {
+    if (!isValidEmail(normalizedEmail)) {
       return {
         ok: false,
-        message: "Username already exists",
+        message: "Enter a valid email address",
+      };
+    }
+
+    const latestUsers = readStoredUsers();
+    const emailExists = latestUsers.some(
+      (user) => user.username.toLowerCase() === normalizedEmail
+    );
+
+    if (emailExists) {
+      return {
+        ok: false,
+        message: "Email already exists",
       };
     }
 
     const user = {
       id: `user-${Date.now()}`,
-      username: normalizedUsername,
+      username: normalizedEmail,
       password,
       role: "user",
     };
@@ -191,7 +207,11 @@ export function AuthProvider({ children }) {
     const normalizedUsername = updatedUser.username?.trim();
 
     if (!normalizedUsername) {
-      return { ok: false, message: "Username is required" };
+      return { ok: false, message: "Email is required" };
+    }
+
+    if (!isValidEmail(normalizedUsername)) {
+      return { ok: false, message: "Enter a valid email address" };
     }
 
     const usernameExists = users.some(
@@ -201,7 +221,7 @@ export function AuthProvider({ children }) {
     );
 
     if (usernameExists) {
-      return { ok: false, message: "Username already exists" };
+      return { ok: false, message: "Email already exists" };
     }
 
     setUsers((latestUsers) =>
@@ -254,11 +274,11 @@ export function AuthProvider({ children }) {
   return (
     <AuthContext.Provider
       value={{
-        users: addUserDisplayIds(users),
-        currentUser,
-        isAuthenticated: Boolean(currentUser),
-        isAdmin: currentUser?.role === "admin",
-        isSuperAdmin: currentUser?.role === "superadmin",
+        users: displayUsers,
+        currentUser: displayCurrentUser,
+        isAuthenticated: Boolean(displayCurrentUser),
+        isAdmin: displayCurrentUser?.role === "admin",
+        isSuperAdmin: displayCurrentUser?.role === "superadmin",
         login,
         signup,
         updateUser,

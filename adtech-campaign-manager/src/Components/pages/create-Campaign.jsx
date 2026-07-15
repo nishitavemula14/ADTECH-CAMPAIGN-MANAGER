@@ -14,6 +14,7 @@ import {
   MAX_CAMPAIGN_BUDGET_LABEL,
   limitCampaignBudget,
 } from "../../lib/budget.js";
+import { getUserLabel } from "../../lib/userDisplay.js";
 
 export default function CreateCampaign() {
   const navigate = useNavigate();
@@ -120,7 +121,7 @@ export default function CreateCampaign() {
               <option value="">Select User</option>
               {assignableUsers.map((user) => (
                 <option key={user.id} value={user.id}>
-                  Owner {user.displayId || user.id}: {user.username} ({user.role})
+                  {getUserLabel(user)} ({user.role})
                 </option>
               ))}
             </select>

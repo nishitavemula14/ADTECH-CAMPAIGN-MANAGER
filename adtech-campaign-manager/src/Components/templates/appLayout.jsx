@@ -9,11 +9,13 @@ import {
 import toast from "react-hot-toast";
 
 import { useAuth } from "../../auth/useAuth.js";
+import { getUserInitial, getUserLabel } from "../../lib/userDisplay.js";
 import ThemeSwitcher from "../molecules/themeSwitcher.jsx";
 
 export default function AppLayout() {
   const { currentUser, logout } = useAuth();
   const hasAdminDashboard = ["admin", "superadmin"].includes(currentUser?.role);
+  const currentUserLabel = getUserLabel(currentUser);
 
   function showCenteredToast(message, options = {}) {
     return toast(message, {
@@ -62,7 +64,7 @@ export default function AppLayout() {
                 toast.dismiss(toastItem.id);
                 logout();
                 showCenteredToast("Logged out successfully", {
-                  duration: 1800,
+                  duration: 800,
                 });
               }}
               className="rounded-lg bg-red-600 px-3 py-2 text-sm font-semibold text-white transition hover:bg-red-700"
@@ -111,12 +113,12 @@ export default function AppLayout() {
         <nav className="grid grid-cols-[repeat(5,max-content)] gap-2 overflow-x-auto py-3 sm:grid-cols-[repeat(6,max-content)] lg:flex lg:flex-1 lg:flex-col lg:overflow-visible lg:py-4">
           <div className="col-span-full flex min-w-0 items-center gap-3 rounded-lg bg-gray-50 p-2 dark:bg-slate-800/70 sm:p-3 lg:col-auto">
             <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-blue-100 text-sm font-bold uppercase text-blue-700 dark:bg-blue-950 dark:text-blue-200">
-              {currentUser?.username?.charAt(0)}
+              {getUserInitial(currentUser)}
             </div>
 
             <div className="min-w-0">
               <p className="truncate text-sm font-bold text-gray-900 dark:text-slate-100">
-                {currentUser?.username}
+                {currentUserLabel}
               </p>
               <p className="hidden text-xs capitalize text-gray-500 dark:text-slate-400 sm:block">
                 {currentUser?.role}

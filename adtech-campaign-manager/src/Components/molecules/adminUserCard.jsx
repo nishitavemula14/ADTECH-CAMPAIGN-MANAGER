@@ -1,4 +1,5 @@
 import { Trash2 } from "lucide-react";
+import { getUserLabel } from "../../lib/userDisplay.js";
 
 export default function AdminUserCard({
   user,
@@ -8,6 +9,7 @@ export default function AdminUserCard({
   onDeleteUser,
 }) {
   const nextRole = user.role === "admin" ? "user" : "admin";
+  const userLabel = getUserLabel(user);
 
   return (
     <article className="rounded-lg bg-white p-4 shadow dark:bg-slate-900">
@@ -21,8 +23,11 @@ export default function AdminUserCard({
             onClick={() => onSelectUser(user.id)}
             className="mt-1 max-w-full break-words text-left text-base font-bold text-blue-600 hover:underline sm:text-lg"
           >
-            {user.username}
+            {userLabel}
           </button>
+          <p className="mt-1 break-words text-sm font-medium text-gray-600 dark:text-slate-300">
+            {user.username}
+          </p>
         </div>
 
         <span className="shrink-0 rounded-full bg-gray-100 px-3 py-1 text-xs font-semibold capitalize text-gray-700 dark:bg-slate-800 dark:text-slate-200">
