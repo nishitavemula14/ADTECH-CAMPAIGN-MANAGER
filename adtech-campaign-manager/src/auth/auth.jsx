@@ -1,5 +1,8 @@
 import { useEffect } from "react";
-import { useLocalStorage } from "../hooks/useLocalStorage.js";
+import {
+  useLocalStorage,
+  useSessionStorage,
+} from "../hooks/useLocalStorage.js";
 import { DEFAULT_USERS } from "../data/users.js";
 import { AuthContext } from "./authContext.js";
 
@@ -98,7 +101,7 @@ function addUserDisplayIds(users) {
 
 export function AuthProvider({ children }) {
   const [users, setUsers] = useLocalStorage(USERS_STORAGE_KEY, DEFAULT_USERS);
-  const [currentUser, setCurrentUser] = useLocalStorage(
+  const [currentUser, setCurrentUser] = useSessionStorage(
     CURRENT_USER_STORAGE_KEY,
     null
   );
@@ -108,6 +111,7 @@ export function AuthProvider({ children }) {
     : null;
 
   useEffect(() => {
+    localStorage.removeItem(CURRENT_USER_STORAGE_KEY);
     setUsers((latestUsers) => {
       const normalizedUsers = latestUsers.map(normalizeUserRole);
       return reconcileDefaultUsers(normalizedUsers);
