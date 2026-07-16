@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link, Navigate, useNavigate, useParams } from "react-router-dom";
+import { Link, Navigate, useLocation, useNavigate, useParams } from "react-router-dom";
 import { ArrowLeft } from "lucide-react";
 import toast from "react-hot-toast";
 import { useAuth } from "../../auth/useAuth.js";
@@ -17,11 +17,18 @@ import {
 
 export default function EditCampaign() {
   const { campaignId } = useParams();
+  const location = useLocation();
   const navigate = useNavigate();
 
   const { currentUser } = useAuth();
   const { campaigns, updateCampaign } = useCampaigns();
-  const returnPath = currentUser?.role === "superadmin" ? "/super-admin" : "/campaigns";
+  const activeNav = location.state?.activeNav;
+  const returnPath =
+    activeNav === "super-admin"
+      ? "/super-admin"
+      : activeNav === "admin"
+        ? "/admin-monitor"
+        : "/campaigns";
 
   const campaign = campaigns.find(
     (item) => item.id === campaignId
@@ -88,7 +95,7 @@ export default function EditCampaign() {
     }
 
     if (!hasChanges) {
-      navigate(returnPath);
+      navigate(returnPath, { state: location.state });
       return;
     }
 
@@ -102,7 +109,7 @@ export default function EditCampaign() {
 
     toast.success("Campaign Updated Successfully!");
 
-    navigate(returnPath);
+    navigate(returnPath, { state: location.state });
   }
 
   return (
@@ -120,6 +127,7 @@ export default function EditCampaign() {
 
         <Link
           to={`/campaigns/${campaignId}`}
+          state={location.state}
           className="flex w-full items-center justify-center gap-2 rounded-lg border border-gray-300 px-4 py-2 text-gray-700 transition hover:bg-gray-100 dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-800 sm:w-auto"
         >
           <ArrowLeft size={18} />
@@ -247,6 +255,7 @@ export default function EditCampaign() {
         <div className="flex flex-col gap-3 sm:flex-row">
           <Link
             to={returnPath}
+            state={location.state}
             className="flex w-full items-center justify-center rounded-lg border border-gray-300 py-3 text-gray-700 transition hover:bg-gray-100 dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-800 sm:w-1/2"
           >
             Cancel

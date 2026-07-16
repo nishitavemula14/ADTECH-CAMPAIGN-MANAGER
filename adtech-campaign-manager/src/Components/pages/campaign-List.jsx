@@ -331,6 +331,7 @@ export default function CampaignList() {
                       <>
                         <Link
                           to={`/campaigns/${campaign.id}/edit`}
+                          state={{ activeNav: "campaigns" }}
                           className="rounded-lg p-2 text-green-600 transition hover:bg-green-50"
                           title="Edit campaign"
                           aria-label="Edit campaign"
@@ -435,6 +436,7 @@ export default function CampaignList() {
                           <>
                             <Link
                               to={`/campaigns/${campaign.id}/edit`}
+                              state={{ activeNav: "campaigns" }}
                               className="rounded-lg p-2 text-green-600 transition hover:bg-green-50"
                               title="Edit campaign"
                               aria-label="Edit campaign"

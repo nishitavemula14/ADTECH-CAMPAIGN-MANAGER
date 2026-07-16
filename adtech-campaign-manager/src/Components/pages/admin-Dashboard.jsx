@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { PlusCircle, Search } from "lucide-react";
 import toast from "react-hot-toast";
 
@@ -17,6 +17,7 @@ import BarChart from "../organisms/barChart.jsx";
 import BudgetDonutChart from "../organisms/donutChart.jsx";
 
 export default function AdminDashboard({ showAnalytics = true }) {
+  const location = useLocation();
   const { users, currentUser, changeUserRole, deleteUser } = useAuth();
   const {
     allCampaigns,
@@ -29,6 +30,10 @@ export default function AdminDashboard({ showAnalytics = true }) {
   const [selectedStatus, setSelectedStatus] = useState("active");
   const [budgetGroup, setBudgetGroup] = useState("platform");
   const isSuperAdmin = currentUser?.role === "superadmin";
+  const editState =
+    location.pathname === "/super-admin"
+      ? { activeNav: "super-admin" }
+      : { activeNav: "admin" };
   const statusOptions = [
     { label: "Active", value: "active" },
     { label: "Paused", value: "paused" },
@@ -457,6 +462,7 @@ export default function AdminDashboard({ showAnalytics = true }) {
                     campaign={campaign}
                     formatCurrency={formatCurrency}
                     canManage={isSuperAdmin}
+                    editState={editState}
                     onDeleteCampaign={confirmDeleteCampaign}
                     onStatusChange={handleCampaignStatusChange}
                   />
@@ -467,6 +473,7 @@ export default function AdminDashboard({ showAnalytics = true }) {
                 campaigns={filteredCampaigns}
                 formatCurrency={formatCurrency}
                 canManage={isSuperAdmin}
+                editState={editState}
                 onDeleteCampaign={confirmDeleteCampaign}
                 onStatusChange={handleCampaignStatusChange}
               />

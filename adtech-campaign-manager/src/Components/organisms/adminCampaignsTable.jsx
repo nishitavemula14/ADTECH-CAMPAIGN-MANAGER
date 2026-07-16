@@ -7,6 +7,7 @@ export default function AdminCampaignsTable({
   campaigns,
   formatCurrency,
   canManage = false,
+  editState,
   onDeleteCampaign,
   onStatusChange,
 }) {
@@ -67,6 +68,7 @@ export default function AdminCampaignsTable({
                       <>
                       <Link
                         to={`/campaigns/${campaign.id}/edit`}
+                        state={editState}
                         className="rounded-lg p-2 text-green-600 transition hover:bg-green-50"
                         title="Edit campaign"
                         aria-label="Edit campaign"

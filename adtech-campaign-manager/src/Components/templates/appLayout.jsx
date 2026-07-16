@@ -1,4 +1,4 @@
-import { NavLink, Outlet, useNavigate } from "react-router-dom";
+import { NavLink, Outlet, useLocation, useNavigate } from "react-router-dom";
 import {
   BarChart3,
   ListChecks,
@@ -14,9 +14,17 @@ import ThemeSwitcher from "../molecules/themeSwitcher.jsx";
 
 export default function AppLayout() {
   const { currentUser, logout } = useAuth();
+  const location = useLocation();
   const navigate = useNavigate();
   const hasAdminDashboard = ["admin", "superadmin"].includes(currentUser?.role);
   const currentUserLabel = getUserLabel(currentUser);
+  const activeNav = location.state?.activeNav;
+  const isCampaignsActive =
+    activeNav === "campaigns" ||
+    (!activeNav &&
+      (location.pathname === "/campaigns" ||
+        (location.pathname.startsWith("/campaigns/") &&
+          location.pathname !== "/campaigns/new")));
 
   function showCenteredToast(message, options = {}) {
     return toast(message, {
@@ -147,7 +155,7 @@ export default function AppLayout() {
             end
             className={({ isActive }) =>
               `flex shrink-0 items-center justify-center gap-2 rounded-lg px-3 py-2 text-sm sm:gap-3 sm:text-base lg:justify-start ${
-                isActive
+                isActive || isCampaignsActive
                   ? "bg-blue-600 text-white"
                   : "text-gray-700 hover:bg-gray-100 dark:text-slate-300 dark:hover:bg-slate-800"
               }`
@@ -180,7 +188,9 @@ export default function AppLayout() {
               }
               className={({ isActive }) =>
                 `flex shrink-0 items-center justify-center gap-2 rounded-lg px-3 py-2 text-sm sm:gap-3 sm:text-base lg:justify-start ${
-                  isActive
+                  isActive ||
+                  activeNav ===
+                    (currentUser?.role === "superadmin" ? "super-admin" : "admin")
                     ? "bg-blue-600 text-white"
                     : "text-gray-700 hover:bg-gray-100 dark:text-slate-300 dark:hover:bg-slate-800"
                 }`
