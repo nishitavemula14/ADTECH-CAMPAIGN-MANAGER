@@ -1,34 +1,12 @@
 import { useState } from "react";
+import {
+  Cell,
+  Pie,
+  PieChart,
+  ResponsiveContainer,
+} from "recharts";
 
 import { formatCurrency } from "../../lib/formatter.js";
-
-const GROUP_COLORS = {
-  "Google Search": "royalblue",
-  "Google Ads": "royalblue",
-  Facebook: "forestgreen",
-  Instagram: "mediumvioletred",
-  LinkedIn: "blueviolet",
-  YouTube: "darkorange",
-  Twitter: "darkcyan",
-  X: "teal",
-  All: "slategray",
-  "18-24": "darkturquoise",
-  "25-34": "limegreen",
-  "35-44": "orange",
-  "35+": "tomato",
-  "45+": "blueviolet",
-};
-
-const FALLBACK_COLORS = [
-  "royalblue",
-  "forestgreen",
-  "mediumvioletred",
-  "darkorange",
-  "blueviolet",
-  "darkcyan",
-  "firebrick",
-  "yellowgreen",
-];
 
 const DONUT_GRADIENTS = [
   ["dodgerblue", "mediumturquoise"],
@@ -55,50 +33,8 @@ function formatCompactCurrency(value) {
   return formatCurrency(amount);
 }
 
-function getColor(name, index) {
-  return GROUP_COLORS[name] || FALLBACK_COLORS[index % FALLBACK_COLORS.length];
-}
-
 function getGradient(index) {
   return DONUT_GRADIENTS[index % DONUT_GRADIENTS.length];
-}
-
-function polarToCartesian(center, radius, angleInDegrees) {
-  const angleInRadians = ((angleInDegrees - 90) * Math.PI) / 180;
-
-  return {
-    x: center + radius * Math.cos(angleInRadians),
-    y: center + radius * Math.sin(angleInRadians),
-  };
-}
-
-function describeDonutSegment(startAngle, endAngle, outerRadius, innerRadius) {
-  const center = 60;
-  const largeArcFlag = endAngle - startAngle > 180 ? 1 : 0;
-  const outerStart = polarToCartesian(center, outerRadius, startAngle);
-  const outerEnd = polarToCartesian(center, outerRadius, endAngle);
-  const innerStart = polarToCartesian(center, innerRadius, startAngle);
-  const innerEnd = polarToCartesian(center, innerRadius, endAngle);
-
-  if (endAngle - startAngle >= 359.99) {
-    return [
-      `M ${center} ${center - outerRadius}`,
-      `A ${outerRadius} ${outerRadius} 0 1 1 ${center} ${center + outerRadius}`,
-      `A ${outerRadius} ${outerRadius} 0 1 1 ${center} ${center - outerRadius}`,
-      `M ${center} ${center - innerRadius}`,
-      `A ${innerRadius} ${innerRadius} 0 1 0 ${center} ${center + innerRadius}`,
-      `A ${innerRadius} ${innerRadius} 0 1 0 ${center} ${center - innerRadius}`,
-      "Z",
-    ].join(" ");
-  }
-
-  return [
-    `M ${outerStart.x} ${outerStart.y}`,
-    `A ${outerRadius} ${outerRadius} 0 ${largeArcFlag} 1 ${outerEnd.x} ${outerEnd.y}`,
-    `L ${innerEnd.x} ${innerEnd.y}`,
-    `A ${innerRadius} ${innerRadius} 0 ${largeArcFlag} 0 ${innerStart.x} ${innerStart.y}`,
-    "Z",
-  ].join(" ");
 }
 
 export default function BudgetDonutChart({
@@ -109,8 +45,6 @@ export default function BudgetDonutChart({
   onStatusChange,
 }) {
   const [hoveredItem, setHoveredItem] = useState(null);
-  const outerRadius = 51;
-  const innerRadius = 33;
   const selectedStatusLabel =
     selectedStatus.charAt(0).toUpperCase() + selectedStatus.slice(1);
 
@@ -125,7 +59,6 @@ export default function BudgetDonutChart({
       ...items,
       {
         ...item,
-        color: getColor(item.name, index),
         gradient: getGradient(index),
         offset: previousOffset,
         percentage,
@@ -172,64 +105,65 @@ export default function BudgetDonutChart({
           <div className="relative h-44 w-44 shrink-0 sm:h-52 sm:w-52">
             {data.length > 0 ? (
               <>
-                <svg
-                  viewBox="0 0 120 120"
-                  className="h-full w-full"
-                >
-                  <defs>
-                    {segments.map((item, index) => (
-                      <linearGradient
-                        key={item.name}
-                        id={`donut-gradient-${index}`}
-                        x1="24"
-                        x2="96"
-                        y1="24"
-                        y2="96"
-                        gradientUnits="userSpaceOnUse"
-                      >
-                        <stop offset="0%" stopColor={item.gradient[0]} />
-                        <stop offset="100%" stopColor={item.gradient[1]} />
-                      </linearGradient>
-                    ))}
-                  </defs>
+                <ResponsiveContainer width="100%" height="100%">
+                  <PieChart>
+                    <defs>
+                      {segments.map((item, index) => (
+                        <linearGradient
+                          key={item.name}
+                          id={`donut-gradient-${index}`}
+                          x1="24"
+                          x2="96"
+                          y1="24"
+                          y2="96"
+                          gradientUnits="userSpaceOnUse"
+                        >
+                          <stop offset="0%" stopColor={item.gradient[0]} />
+                          <stop offset="100%" stopColor={item.gradient[1]} />
+                        </linearGradient>
+                      ))}
+                    </defs>
 
-                  <circle
-                    cx="60"
-                    cy="60"
-                    r="42"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="18"
-                    className="text-gray-200 dark:text-slate-800"
-                  />
+                    <circle
+                      cx="50%"
+                      cy="50%"
+                      r="35%"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="18"
+                      className="text-gray-200 dark:text-slate-800"
+                    />
 
-                  {segments.map((item, index) => {
-                    const startAngle = item.offset * 360;
-                    const endAngle = startAngle + item.percentage * 360;
-                    const isFocused = focusedItem?.name === item.name;
+                    <Pie
+                      data={segments}
+                      dataKey="budget"
+                      nameKey="name"
+                      cx="50%"
+                      cy="50%"
+                      innerRadius="55%"
+                      outerRadius="85%"
+                      startAngle={90}
+                      endAngle={-270}
+                      isAnimationActive={false}
+                      stroke="none"
+                      onMouseLeave={() => setHoveredItem(null)}
+                    >
+                      {segments.map((item, index) => {
+                        const isFocused = focusedItem?.name === item.name;
 
-                    return (
-                      <path
-                        key={item.name}
-                        d={describeDonutSegment(
-                          startAngle,
-                          endAngle,
-                          outerRadius,
-                          innerRadius
-                        )}
-                        fill={`url(#donut-gradient-${index})`}
-                        fillRule="evenodd"
-                        className={`cursor-pointer drop-shadow-sm transition-all duration-300 dark:drop-shadow-none ${
-                          focusedItem && !isFocused
-                            ? "opacity-35"
-                            : "opacity-100 hover:brightness-110"
-                        }`}
-                        onMouseEnter={() => setHoveredItem(item)}
-                        onMouseLeave={() => setHoveredItem(null)}
-                      />
-                    );
-                  })}
-                </svg>
+                        return (
+                          <Cell
+                            key={item.name}
+                            fill={`url(#donut-gradient-${index})`}
+                            className="cursor-pointer drop-shadow-sm transition-all duration-300 dark:drop-shadow-none"
+                            opacity={focusedItem && !isFocused ? 0.35 : 1}
+                            onMouseEnter={() => setHoveredItem(item)}
+                          />
+                        );
+                      })}
+                    </Pie>
+                  </PieChart>
+                </ResponsiveContainer>
 
                 <div className="absolute inset-0 flex flex-col items-center justify-center px-6 text-center">
                   <p className="max-w-24 truncate text-[11px] font-semibold uppercase tracking-wide text-gray-500 dark:text-slate-400">
