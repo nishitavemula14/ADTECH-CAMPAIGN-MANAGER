@@ -99,14 +99,14 @@ export default function AppLayout() {
   }
 
   return (
-    <div className="flex min-h-screen flex-col overflow-visible bg-gray-100 text-gray-950 transition-colors dark:bg-slate-950 dark:text-slate-100 lg:h-screen lg:flex-row lg:overflow-hidden">
-      <aside className="sticky top-0 z-40 flex shrink-0 flex-col border-b border-gray-200 bg-white p-3 shadow-sm transition-colors dark:border-slate-800 dark:bg-slate-900 sm:p-4 lg:static lg:h-screen lg:w-64 lg:border-b-0 lg:border-r lg:p-5">
-        <div className="flex items-center gap-3 pb-3 sm:pb-4 lg:pb-5">
+    <div className="app-shell flex min-h-screen flex-col overflow-visible bg-gray-100 text-gray-950 transition-colors dark:bg-slate-950 dark:text-slate-100 lg:h-screen lg:flex-row lg:overflow-hidden">
+      <aside className="app-sidebar sticky top-0 z-40 flex shrink-0 flex-col border-b border-gray-200 bg-white p-3 shadow-sm transition-colors dark:border-slate-800 dark:bg-slate-900 sm:p-4 lg:static lg:h-screen lg:w-64 lg:border-b-0 lg:border-r lg:p-5">
+        <div className="app-sidebar-brand flex items-center gap-3 pb-3 sm:pb-4 lg:pb-5">
           <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-blue-600 text-sm font-bold text-white lg:h-12 lg:w-12 lg:text-base">
             ACM
           </div>
 
-          <div>
+          <div className="app-sidebar-brand-copy">
             <h2 className="text-base font-bold sm:text-lg">
               AdTech
             </h2>
@@ -118,9 +118,9 @@ export default function AppLayout() {
 
         </div>
 
-        <div className="border-t border-gray-200 dark:border-slate-800" />
+        <div className="app-sidebar-divider border-t border-gray-200 dark:border-slate-800" />
 
-        <nav className="grid grid-cols-[repeat(5,max-content)] gap-2 overflow-x-auto py-3 sm:grid-cols-[repeat(6,max-content)] lg:flex lg:flex-1 lg:flex-col lg:overflow-visible lg:py-4">
+        <nav className="app-sidebar-nav grid grid-cols-[repeat(5,max-content)] gap-2 overflow-x-auto py-3 sm:grid-cols-[repeat(6,max-content)] lg:flex lg:flex-1 lg:flex-col lg:overflow-visible lg:py-4">
           <div className="col-span-full flex min-w-0 items-center gap-3 rounded-lg bg-gray-50 p-2 dark:bg-slate-800/70 sm:p-3 lg:col-auto">
             <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-blue-100 text-sm font-bold uppercase text-blue-700 dark:bg-blue-950 dark:text-blue-200">
               {getUserInitial(currentUser)}
@@ -203,9 +203,9 @@ export default function AppLayout() {
 
         </nav>
 
-        <div className="border-t border-gray-200 dark:border-slate-800" />
+        <div className="app-sidebar-divider border-t border-gray-200 dark:border-slate-800" />
 
-        <div className="pt-3 lg:pt-4">
+        <div className="app-sidebar-actions pt-3 lg:pt-4">
           <div className="grid grid-cols-2 gap-1 lg:mt-3 lg:grid-cols-1">
             <ThemeSwitcher />
 

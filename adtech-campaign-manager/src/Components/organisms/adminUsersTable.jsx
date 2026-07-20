@@ -9,7 +9,7 @@ export default function AdminUsersTable({
   onDeleteUser,
 }) {
   return (
-    <div className="campaign-list-scrollbar hidden max-h-[calc(100dvh-300px)] overflow-auto rounded-lg bg-white shadow dark:bg-slate-900 lg:block">
+    <div className="campaign-list-scrollbar hidden max-h-[calc(100dvh-300px)] overflow-auto rounded-lg bg-white shadow dark:bg-slate-900 xl:block">
       <table className="w-full min-w-[860px]">
         <thead className="bg-gray-100 dark:bg-slate-800">
           <tr>
@@ -58,7 +58,11 @@ export default function AdminUsersTable({
                       <button
                         type="button"
                         onClick={() => onRoleChange(user.id, nextRole)}
-                        className="rounded-lg px-3 py-2 text-sm font-semibold text-gray-700 transition hover:bg-gray-100 dark:text-slate-200 dark:hover:bg-slate-800"
+                        className={`rounded-lg px-3 py-2 text-sm font-semibold transition ${
+                          user.role === "admin"
+                            ? "text-amber-700 hover:bg-amber-50 dark:text-amber-300 dark:hover:bg-amber-950/30"
+                            : "text-blue-700 hover:bg-blue-50 dark:text-blue-300 dark:hover:bg-blue-950/30"
+                        }`}
                       >
                         {user.role === "admin" ? "Demote" : "Promote"}
                       </button>

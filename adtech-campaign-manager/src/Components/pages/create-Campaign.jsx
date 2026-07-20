@@ -16,12 +16,15 @@ import {
 } from "../../lib/budget.js";
 import { getUserLabel } from "../../lib/userDisplay.js";
 
+const CAMPAIGN_DESCRIPTION_CHARACTER_LIMIT = 300;
+
 export default function CreateCampaign() {
   const navigate = useNavigate();
   const { currentUser, users } = useAuth();
   const { campaigns, addCampaign } = useCampaigns();
 
   const [campaignName, setCampaignName] = useState("");
+  const [description, setDescription] = useState("");
   const [platform, setPlatform] = useState("");
   const [budget, setBudget] = useState("");
   const [ageGroup, setAgeGroup] = useState("");
@@ -42,6 +45,7 @@ export default function CreateCampaign() {
 
     if (
       campaignName.trim() === "" ||
+      description.trim() === "" ||
       platform === "" ||
       ageGroup === "" ||
       (canAssignOwner && assignedUserId === "") ||
@@ -68,6 +72,7 @@ export default function CreateCampaign() {
 
     const newCampaign = {
       name: campaignName.trim(),
+      description: description.trim(),
       platform,
       budget,
       ageGroup,
@@ -157,6 +162,30 @@ export default function CreateCampaign() {
               This name already exists.
             </p>
           )}
+        </div>
+
+        <div>
+          <label
+            htmlFor="campaign-description"
+            className="mb-2 block font-medium text-gray-900 dark:text-slate-100"
+          >
+            What is your campaign about?
+          </label>
+
+          <textarea
+            id="campaign-description"
+            value={description}
+            maxLength={CAMPAIGN_DESCRIPTION_CHARACTER_LIMIT}
+            onChange={(e) => setDescription(e.target.value)}
+            placeholder="Briefly describe your campaign, its goal, or the product you are promoting"
+            rows={4}
+            required
+            className="w-full resize-y rounded-md border border-gray-300 bg-white p-3 text-gray-900 focus:border-blue-500 focus:outline-none dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100"
+          />
+
+          <p className="mt-2 text-sm text-gray-500 dark:text-slate-400">
+            {description.length}/{CAMPAIGN_DESCRIPTION_CHARACTER_LIMIT} characters
+          </p>
         </div>
 
         <div>

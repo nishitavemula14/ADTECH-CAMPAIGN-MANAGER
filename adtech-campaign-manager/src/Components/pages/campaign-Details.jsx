@@ -32,11 +32,13 @@ export default function CampaignDetail() {
     currentUser?.role === "superadmin" || campaign.ownerId === currentUser?.id;
 
   return (
-    <div className="mx-auto max-w-4xl p-3 sm:p-4 md:p-6">
+    <div className="mx-auto min-w-0 max-w-4xl p-3 sm:p-4 md:p-6">
       <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <p className="text-sm text-gray-500 dark:text-slate-400">Campaign Details</p>
-          <h1 className="break-words text-2xl font-bold sm:text-3xl">{campaign.name}</h1>
+          <h1 className="max-w-full break-words text-2xl font-bold [overflow-wrap:anywhere] sm:text-3xl">
+            {campaign.name}
+          </h1>
         </div>
 
         <div className="flex flex-col gap-3 sm:flex-row">
@@ -70,25 +72,44 @@ export default function CampaignDetail() {
         </div>
       </div>
 
-      <div className="rounded-xl bg-white p-4 shadow dark:bg-slate-900 sm:p-6">
-        <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
-          <div>
+      <div className="min-w-0 max-w-full overflow-hidden rounded-xl bg-white p-4 shadow dark:bg-slate-900 sm:p-6">
+        <div className="min-w-0">
+          <div className="min-w-0">
+            <p className="text-sm font-semibold text-gray-500 dark:text-slate-400">
+              About This Campaign
+            </p>
+            <p className="mt-1 max-w-full whitespace-pre-wrap break-words text-gray-900 [overflow-wrap:anywhere] dark:text-slate-100">
+              {campaign.description || "No campaign description provided."}
+            </p>
+          </div>
+
+        </div>
+
+        <div className="mt-6 grid min-w-0 grid-cols-1 gap-x-10 gap-y-5 sm:grid-cols-2">
+          <div className="sm:col-start-1">
             <p className="text-sm font-semibold text-gray-500 dark:text-slate-400">Campaign ID</p>
             <p className="mt-1 text-lg font-bold text-gray-900 dark:text-slate-100">
               {campaign.displayId || campaign.id}
             </p>
           </div>
 
-          {currentUser?.role === "superadmin" && (
-            <div>
+          {["admin", "superadmin"].includes(currentUser?.role) && (
+            <div className="min-w-0 sm:col-start-2 sm:row-start-1">
               <p className="text-sm font-semibold text-gray-500 dark:text-slate-400">Created By</p>
-              <p className="mt-1 text-lg font-bold text-gray-900 dark:text-slate-100">
+              <p className="mt-1 break-words text-lg font-bold text-gray-900 [overflow-wrap:anywhere] dark:text-slate-100">
                 {getUserLabel(owner)}
               </p>
             </div>
           )}
 
-          <div>
+          <div className="sm:col-start-1">
+            <p className="text-sm font-semibold text-gray-500 dark:text-slate-400">Platform</p>
+            <p className="mt-1 text-lg font-bold text-gray-900 dark:text-slate-100">
+              {campaign.platform}
+            </p>
+          </div>
+
+          <div className="sm:col-start-2">
             <p className="text-sm font-semibold text-gray-500 dark:text-slate-400">Status</p>
             <span
               className={`mt-2 inline-flex rounded-full px-3 py-1 text-sm font-semibold ${
@@ -99,28 +120,21 @@ export default function CampaignDetail() {
             </span>
           </div>
 
-          <div>
-            <p className="text-sm font-semibold text-gray-500 dark:text-slate-400">Platform</p>
-            <p className="mt-1 text-lg font-bold text-gray-900 dark:text-slate-100">
-              {campaign.platform}
-            </p>
-          </div>
-
-          <div>
-            <p className="text-sm font-semibold text-gray-500 dark:text-slate-400">Audience</p>
-            <p className="mt-1 text-lg font-bold text-gray-900 dark:text-slate-100">
-              {campaign.ageGroup}
-            </p>
-          </div>
-
-          <div>
+          <div className="sm:col-start-1">
             <p className="text-sm font-semibold text-gray-500 dark:text-slate-400">Budget</p>
             <p className="mt-1 text-lg font-bold text-gray-900 dark:text-slate-100">
               {formatCurrency(campaign.budget)}
             </p>
           </div>
 
-          <div>
+          <div className="sm:col-start-2">
+            <p className="text-sm font-semibold text-gray-500 dark:text-slate-400">Audience</p>
+            <p className="mt-1 text-lg font-bold text-gray-900 dark:text-slate-100">
+              {campaign.ageGroup}
+            </p>
+          </div>
+
+          <div className="sm:col-start-1">
             <p className="text-sm font-semibold text-gray-500 dark:text-slate-400">Created At</p>
             <p className="mt-1 text-lg font-bold text-gray-900 dark:text-slate-100">
               {campaign.createdAt

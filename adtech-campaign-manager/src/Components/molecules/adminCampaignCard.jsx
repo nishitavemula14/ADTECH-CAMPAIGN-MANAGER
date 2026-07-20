@@ -14,13 +14,13 @@ export default function AdminCampaignCard({
   const status = String(campaign.status).toLowerCase();
 
   return (
-    <article className="rounded-lg bg-white p-4 shadow dark:bg-slate-900">
+    <article className="min-w-0 rounded-lg bg-white p-4 shadow dark:bg-slate-900">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div className="min-w-0">
           <p className="text-xs font-semibold uppercase text-gray-500 dark:text-slate-400">
             Campaign ID {campaign.displayId || campaign.id}
           </p>
-          <h3 className="mt-1 break-words text-base font-bold">
+          <h3 className="mt-1 break-words text-base font-bold [overflow-wrap:anywhere]">
             {campaign.name}
           </h3>
         </div>

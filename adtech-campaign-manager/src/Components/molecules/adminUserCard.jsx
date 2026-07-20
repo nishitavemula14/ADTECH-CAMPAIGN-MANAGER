@@ -12,7 +12,7 @@ export default function AdminUserCard({
   const userLabel = getUserLabel(user);
 
   return (
-    <article className="rounded-lg bg-white p-4 shadow dark:bg-slate-900">
+    <article className="min-w-0 rounded-lg bg-white p-4 shadow dark:bg-slate-900">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div className="min-w-0">
           <p className="text-xs font-semibold uppercase text-gray-500 dark:text-slate-400">
@@ -50,7 +50,11 @@ export default function AdminUserCard({
           <button
             type="button"
             onClick={() => onRoleChange(user.id, nextRole)}
-            className="rounded-lg border border-gray-300 px-3 py-2 text-sm font-semibold text-gray-700 transition hover:bg-gray-100 dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-800"
+            className={`rounded-lg px-3 py-2 text-sm font-semibold transition ${
+              user.role === "admin"
+                ? "text-amber-700 hover:bg-amber-50 dark:text-amber-300 dark:hover:bg-amber-950/30"
+                : "text-blue-700 hover:bg-blue-50 dark:text-blue-300 dark:hover:bg-blue-950/30"
+            }`}
           >
             {user.role === "admin" ? "Demote" : "Promote"}
           </button>

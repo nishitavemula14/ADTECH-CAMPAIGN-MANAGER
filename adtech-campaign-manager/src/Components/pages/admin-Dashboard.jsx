@@ -293,7 +293,7 @@ export default function AdminDashboard({ showAnalytics = true }) {
   }
 
   return (
-    <div className="mx-auto flex min-h-full max-w-7xl flex-col p-3 sm:p-4 lg:p-6">
+    <div className="mx-auto flex min-h-full min-w-0 max-w-7xl flex-col overflow-x-hidden p-3 sm:p-4 lg:p-6">
       <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <p className="text-sm text-gray-500 dark:text-slate-400">
@@ -324,13 +324,13 @@ export default function AdminDashboard({ showAnalytics = true }) {
 
       {showDashboardAnalytics && (
         <section className="mt-6 grid min-h-0 grid-cols-1 gap-6 lg:grid-cols-2">
-          <div className="flex min-h-[420px] flex-col rounded-lg bg-white p-4 shadow dark:bg-slate-900 sm:p-5">
+          <div className="flex min-h-[340px] flex-col rounded-lg bg-white p-4 shadow dark:bg-slate-900 sm:min-h-[420px] sm:p-5">
             <h2 className="mb-6 shrink-0 text-xl font-semibold">
               Top 5 Active Campaigns
             </h2>
 
             {topCampaigns.length > 0 ? (
-              <div className="min-h-[320px] flex-1">
+              <div className="min-h-[260px] flex-1 sm:min-h-[320px]">
                 <BarChart data={topCampaigns} />
               </div>
             ) : (
@@ -342,7 +342,7 @@ export default function AdminDashboard({ showAnalytics = true }) {
             )}
           </div>
 
-          <div className="flex min-h-[420px] flex-col overflow-visible rounded-lg bg-white p-4 shadow dark:bg-slate-900 sm:p-5">
+          <div className="flex min-h-[340px] flex-col overflow-visible rounded-lg bg-white p-4 shadow dark:bg-slate-900 sm:min-h-[420px] sm:p-5">
             <div className="mb-6 flex shrink-0 flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
               <h2 className="text-lg font-semibold sm:text-xl">
                 Budget Breakdown By{" "}
@@ -367,7 +367,7 @@ export default function AdminDashboard({ showAnalytics = true }) {
               </div>
             </div>
 
-            <div className="min-h-[320px] flex-1 overflow-visible">
+            <div className="min-h-[260px] flex-1 overflow-visible sm:min-h-[320px]">
               <BudgetDonutChart
                 data={budgetBreakdown}
                 totalBudget={filteredBudget}
@@ -420,7 +420,7 @@ export default function AdminDashboard({ showAnalytics = true }) {
           </div>
 
           {!selectedUser && (
-            <div className="campaign-list-scrollbar grid max-h-[calc(100dvh-300px)] gap-3 overflow-y-auto pr-1 lg:hidden md:grid-cols-2">
+            <div className="grid min-w-0 gap-3 md:grid-cols-2 xl:hidden">
               {userSummaries.map((user) => (
                 <AdminUserCard
                   key={user.id}
@@ -455,7 +455,7 @@ export default function AdminDashboard({ showAnalytics = true }) {
             />
           ) : (
             <div>
-              <div className="campaign-list-scrollbar grid max-h-[calc(100dvh-340px)] gap-3 overflow-y-auto pr-1 lg:hidden md:grid-cols-2">
+              <div className="grid min-w-0 gap-3 md:grid-cols-2 xl:hidden">
                 {filteredCampaigns.map((campaign) => (
                   <AdminCampaignCard
                     key={campaign.id}

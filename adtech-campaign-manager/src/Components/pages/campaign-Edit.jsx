@@ -15,6 +15,8 @@ import {
   limitCampaignBudget,
 } from "../../lib/budget.js";
 
+const CAMPAIGN_DESCRIPTION_CHARACTER_LIMIT = 300;
+
 export default function EditCampaign() {
   const { campaignId } = useParams();
   const location = useLocation();
@@ -35,6 +37,7 @@ export default function EditCampaign() {
   );
 
   const [campaignName, setCampaignName] = useState(campaign?.name || "");
+  const [description, setDescription] = useState(campaign?.description || "");
   const [platform, setPlatform] = useState(campaign?.platform || "");
   const [ageGroup, setAgeGroup] = useState(campaign?.ageGroup || "");
   const [budget, setBudget] = useState(campaign?.budget || "");
@@ -42,6 +45,7 @@ export default function EditCampaign() {
   const campaignNameCharacterCount = getCampaignNameCharacterCount(campaignName);
   const hasChanges =
     campaignName.trim() !== String(campaign?.name || "").trim() ||
+    description.trim() !== String(campaign?.description || "").trim() ||
     platform !== (campaign?.platform || "") ||
     ageGroup !== (campaign?.ageGroup || "") ||
     String(budget) !== String(campaign?.budget || "") ||
@@ -71,6 +75,7 @@ export default function EditCampaign() {
 
     if (
       campaignName.trim() === "" ||
+      description.trim() === "" ||
       platform === "" ||
       ageGroup === "" ||
       Number(budget) <= 0
@@ -101,6 +106,7 @@ export default function EditCampaign() {
 
     updateCampaign(campaignId, {
       name: campaignName.trim(),
+      description: description.trim(),
       platform: platform,
       ageGroup: ageGroup,
       budget: budget,
@@ -168,6 +174,30 @@ export default function EditCampaign() {
               This name already exists.
             </p>
           )}
+        </div>
+
+        <div>
+          <label
+            htmlFor="campaign-description"
+            className="mb-2 block font-medium text-gray-900 dark:text-slate-100"
+          >
+            What is your campaign about?
+          </label>
+
+          <textarea
+            id="campaign-description"
+            value={description}
+            maxLength={CAMPAIGN_DESCRIPTION_CHARACTER_LIMIT}
+            onChange={(e) => setDescription(e.target.value)}
+            placeholder="Briefly describe your campaign, its goal, or the product you are promoting"
+            rows={4}
+            required
+            className="w-full resize-y rounded-md border border-gray-300 bg-white p-3 text-gray-900 focus:border-blue-500 focus:outline-none dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100"
+          />
+
+          <p className="mt-2 text-sm text-gray-500 dark:text-slate-400">
+            {description.length}/{CAMPAIGN_DESCRIPTION_CHARACTER_LIMIT} characters
+          </p>
         </div>
 
         <div>

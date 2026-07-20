@@ -12,7 +12,7 @@ export default function AdminCampaignsTable({
   onStatusChange,
 }) {
   return (
-    <div className="campaign-list-scrollbar hidden max-h-[calc(100dvh-340px)] overflow-auto rounded-lg bg-white shadow dark:bg-slate-900 lg:block">
+    <div className="campaign-list-scrollbar hidden max-h-[calc(100dvh-340px)] overflow-auto rounded-lg bg-white shadow dark:bg-slate-900 xl:block">
       <table className="w-full min-w-[860px]">
         <thead className="bg-gray-100 dark:bg-slate-800">
           <tr>
